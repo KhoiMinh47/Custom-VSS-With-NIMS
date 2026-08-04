@@ -136,56 +136,56 @@ và [model-manifest.yaml](config/models/model-manifest.yaml).
 
 ### 1. Camera và raw recording
 
-```text
-Physical RTSP / managed RTSP
-  -> VIOS Sensor + StreamProcessing + Ingress
-  -> live/proxy + raw recording + timeline
-  -> snapshot hoặc selected clip khi workflow yêu cầu
+```mermaid
+flowchart LR
+    RTSP[Physical or managed RTSP] --> VIOS[VIOS Sensor + StreamProcessing + Ingress]
+    VIOS --> LIVE[Live / proxy]
+    VIOS --> RAW[Raw recording + timeline]
+    VIOS --> SELECT[Snapshot or selected clip]
 ```
 
 VIOS là chủ sở hữu video plane. AI không mount và quét toàn bộ raw archive.
 
 ### 2. Realtime RT-CV và behavior
 
-```text
-AI substream
-  -> secure RTSP relay
-  -> DeepStream decode
-  -> RT-DETR detection
-  -> NvDCF tracking
-  -> NVIDIA protobuf on mdx-raw
-  -> normalized JSON on vss.rt-cv.frames
-  -> Behavior Analytics
-  -> count / line / ROI / dwell / queue / heatmap / candidate
+```mermaid
+flowchart LR
+    STREAM[H.264 AI substream] --> RELAY[Secure RTSP relay]
+    RELAY --> DS[DeepStream]
+    DS --> DET[RT-DETR detection]
+    DET --> TRACK[NvDCF tracking]
+    TRACK --> RAW[mdx-raw protobuf]
+    RAW --> META[Metadata normalizer]
+    META --> BA[Behavior Analytics]
+    BA --> OUT[Count / ROI / dwell / queue / heatmap / candidate]
 ```
 
 ### 3. Hybrid candidate → VLM alert
 
-```text
-Behavior candidate
-  -> deterministic incident
-  -> VIOS selected clip (4 s pre-roll + 4 s post-roll)
-  -> H.264 1280×720 media preparation
-  -> Cosmos3 structured verdict
-  -> confirmed / rejected / uncertain
-  -> Elasticsearch + Alerts UI + feedback
+```mermaid
+flowchart LR
+    CAND[Behavior candidate] --> INC[Deterministic incident]
+    INC --> CLIP[VIOS selected clip<br/>4s pre + 4s post]
+    CLIP --> PREP[H.264 media preparation]
+    PREP --> VLM[Cosmos3 structured verdict]
+    VLM --> VERDICT[Confirmed / rejected / uncertain]
+    VERDICT --> OUT[Elasticsearch + Alerts UI + feedback]
 ```
 
 Đây là alert mode mặc định vì tiết kiệm GPU hơn direct RT-VLM.
 
 ### 4. Upload video → RT-CV → VLM Test
 
-```text
-Drop/select MP4/MKV
-  -> staging-only upload
-  -> host GPU worker queue
-  -> stop conflicting GPU profile
-  -> RT-CV file batch
-  -> real detection candidate
-  -> stop RT-CV batch
-  -> admit Cosmos3
-  -> VLM verdict
-  -> explicit Save to Store
+```mermaid
+flowchart LR
+    FILE[Drop/select MP4/MKV] --> STAGE[Staging-only upload]
+    STAGE --> QUEUE[Host GPU worker queue]
+    QUEUE --> BATCH[RT-CV file batch]
+    BATCH -->|candidate| STOP[Stop RT-CV + revoke lease]
+    BATCH -->|no candidate| NONE[no_rtcv_candidate]
+    STOP --> ADMIT[Admit Cosmos3]
+    ADMIT --> RESULT[VLM structured verdict]
+    RESULT --> SAVE[Explicit Save to Store]
 ```
 
 Chọn file là upload tự bắt đầu. Video không vào Store trước khi VLM hoàn tất và
@@ -194,13 +194,14 @@ người dùng bấm `Save to Store`. Nếu RT-CV không detect object, job kế
 
 ### 5. Realtime candidate → VLM Test
 
-```text
-RT-CV + Behavior candidate đã persist
-  -> VLM Test / Realtime
-  -> copy exact selected clip vào staging
-  -> Cosmos3 admission/inference
-  -> result trong staging
-  -> optional Save to Store
+```mermaid
+flowchart LR
+    CAND[Persisted RT-CV + Behavior candidate] --> UI[VLM Test / Realtime]
+    UI --> CLIP[Copy exact selected clip]
+    CLIP --> STAGE[Staging job]
+    STAGE --> VLM[Cosmos3 admission + inference]
+    VLM --> RESULT[Staging result]
+    RESULT --> SAVE[Optional Save to Store]
 ```
 
 Đây là bounded-clip realtime workflow, không phải đưa một RTSP vô hạn trực
@@ -208,11 +209,12 @@ tiếp vào VLM. Candidate mới chỉ xuất hiện khi RT-CV realtime đang he
 
 ### 6. Store retest
 
-```text
-Post-VLM Store asset
-  -> Launch VLM
-  -> staging retest job
-  -> Cosmos3 result mới
+```mermaid
+flowchart LR
+    ASSET[Post-VLM Store asset] --> LAUNCH[Launch VLM]
+    LAUNCH --> JOB[New staging retest job]
+    JOB --> VLM[Cosmos3]
+    VLM --> RESULT[New result]
 ```
 
 Launch không tạo thêm một bản Store mới. Store chỉ chứa media được save rõ
@@ -220,25 +222,29 @@ ràng sau một VLM result hoàn tất.
 
 ### 7. Direct RT-VLM
 
-```text
-Selected cam-01 stream
-  -> 8-second bounded chunk
-  -> 5 fixed frames
-  -> Cosmos3 through VSS RT-VLM
-  -> semantic alert/result
+```mermaid
+flowchart LR
+    STREAM[Selected cam-01 stream] --> CHUNK[8-second bounded chunk]
+    CHUNK --> FRAMES[5 fixed frames]
+    FRAMES --> VLM[Cosmos3 through VSS RT-VLM]
+    VLM --> ALERT[Semantic alert/result]
 ```
 
 Mode này opt-in, giới hạn một camera và phải serialize với RT-CV.
 
 ### 8. Semantic search
 
-```text
-Selected clips -> Cosmos-Embed1 -> 768-d video vectors
-Object crops    -> SigLIP2       -> 1152-d image/object vectors
-User query      -> deterministic router or Nemotron decomposition
-                -> action / attribute / fusion / image retrieval
-                -> optional Cosmos3 top-K critic
-                -> camera + UTC + selected clip + score
+```mermaid
+flowchart LR
+    CLIPS[Selected clips] --> VIDEO[Cosmos-Embed1<br/>768-d video vectors]
+    CROPS[Object crops] --> OBJECT[SigLIP2<br/>1152-d object vectors]
+    QUERY[User text/image query] --> ROUTER[Deterministic router or Nemotron]
+    VIDEO --> RETRIEVE[Action / attribute / fusion / image retrieval]
+    OBJECT --> RETRIEVE
+    ROUTER --> RETRIEVE
+    RETRIEVE --> TOP[Top-K results]
+    TOP --> CRITIC[Optional Cosmos3 critic]
+    CRITIC --> EVIDENCE[Camera + UTC + clip + score]
 ```
 
 Khi GPU providers offline, cached vectors và deterministic routing vẫn cho
@@ -246,18 +252,40 @@ phép search; critic được ghi `unavailable`, không giả kết quả verifi
 
 ### 9. Summarization, Q&A và report
 
-```text
-Explicit selected clips
-  -> five-frame sampling per clip
-  -> Cosmos3 timestamped captions
-  -> checkpoint after each clip
-  -> Nemotron partial/hierarchical summary
-  -> grounded Q&A
-  -> incident / shift / daily JSON + Markdown report
+```mermaid
+flowchart TB
+    CLIPS[Explicit selected clips] --> FRAMES[Five-frame sampling]
+    FRAMES --> CAPTION[Cosmos3 timestamped captions]
+    CAPTION --> CHECK[Checkpoint per clip]
+    CHECK --> SUMMARY[Nemotron partial/hierarchical summary]
+    SUMMARY --> QA[Grounded Q&A]
+    SUMMARY --> REPORT[Incident / shift / daily JSON + Markdown report]
 ```
 
 Khoảng thời gian không có selected media là `unobserved`, không được diễn giải
 thành “không có sự kiện”. Khi thiếu evidence, Q&A trả `không đủ dữ liệu`.
+
+### 10. Chat / LLM assistant
+
+```mermaid
+flowchart LR
+    CHAT[NVIDIA VSS Chat] --> BFF[Same-origin gateway]
+    BFF --> LEASE[Verify active LLM lease]
+    LEASE --> LLM[Nemotron endpoint]
+    LLM --> SSE[SSE grounded answer]
+```
+
+### 11. GPU model ON/OFF và admission
+
+```mermaid
+flowchart LR
+    UI[GPU UI] --> API[Phase 15 API]
+    API --> QUEUE[Command queue + audit]
+    QUEUE --> WORKER[Host GPU worker]
+    WORKER --> ADMIT[Admission: leases + VRAM reserve]
+    ADMIT --> SCRIPT[Allowlisted start/stop script]
+    SCRIPT --> STATE[Online / offline / error state]
+```
 
 Chi tiết tất cả pipeline, failure state và nơi lưu dữ liệu:
 [PIPELINES.md](docs/architecture/PIPELINES.md).

@@ -44,12 +44,12 @@ che bằng mock stream.
 
 ### 1.2 User-managed RTSP stream
 
-```text
-Video Management / + Upload Stream
-  -> same-origin POST /workspace/stream-sources
-  -> validate rtsp:// URL and display name
-  -> fixed VIOS sensor/add upstream
-  -> credential-free inventory card
+```mermaid
+flowchart LR
+    UI[Video Management / Upload Stream] --> API[Same-origin stream-sources API]
+    API --> VALIDATE[Validate URL + display name]
+    VALIDATE --> VIOS[Fixed VIOS sensor/add adapter]
+    VIOS --> CARD[Credential-free inventory card]
 ```
 
 Delete từ NVIDIA UI gọi compatibility route theo display name. Gateway resolve
@@ -75,16 +75,13 @@ Không service AI nào được mount raw recording để quét archive.
 
 ## 2. Low-latency live presentation
 
-```text
-cam-01 VIOS proxy
-  -> GStreamer rtspsrc TCP
-     latency=100 ms
-     drop-on-latency=true
-     buffer-mode=none
-  -> leaky queue (2 frames)
-  -> NVJPEG multipart MJPEG
-  -> /workspace/cameras/cam-01/live.mjpeg
-  -> Streaming card / Open Live
+```mermaid
+flowchart LR
+    PROXY[cam-01 VIOS proxy] --> GST[GStreamer RTSP TCP<br/>100ms jitter buffer]
+    GST --> QUEUE[Leaky queue<br/>2 frames]
+    QUEUE --> JPEG[NVJPEG multipart MJPEG]
+    JPEG --> ENDPOINT[/cam-01/live.mjpeg]
+    ENDPOINT --> UI[Streaming card / Open Live]
 ```
 
 Leaky queue bỏ frame cũ khi client chậm, tránh tích lũy 1–2 phút backlog.
@@ -127,13 +124,14 @@ nghĩa stream đã chết; health còn dùng vendor FPS/frame counter.
 
 Trạng thái: runtime proven trong VLM Test upload workflow.
 
-```text
-staged MP4/MKV
-  -> dedicated rtcv-file-batch Compose
-  -> pinned VSS RT-CV image
-  -> DeepStream file source
-  -> mdx-raw detections
-  -> bounded candidate contract
+```mermaid
+flowchart LR
+    FILE[Staged MP4/MKV] --> COMPOSE[Dedicated RT-CV file-batch Compose]
+    COMPOSE --> IMAGE[Pinned VSS RT-CV 3.2.1]
+    IMAGE --> DS[DeepStream file source]
+    DS --> DET[RT-DETR + NvDCF]
+    DET --> RAW[mdx-raw detections]
+    RAW --> CAND[Bounded candidate contract]
 ```
 
 File batch có lease `rtcv_file_batch`. Nó chỉ tạo candidate khi RT-CV thật
@@ -198,15 +196,15 @@ Các bước bảo vệ:
 
 Trạng thái: opt-in, one-camera runtime proven, accuracy partial.
 
-```text
-cam-01 credential-free H.264 relay
-  -> VSS RT-VLM
-  -> 8-second chunk
-  -> 5 uniformly fixed frames
-  -> Cosmos3 semantic prompt
-  -> VisionLLM protobuf
-  -> CPU result collector
-  -> direct alert index/UI
+```mermaid
+flowchart LR
+    STREAM[cam-01 credential-free H.264 relay] --> RTVLM[VSS RT-VLM]
+    RTVLM --> CHUNK[8-second bounded chunk]
+    CHUNK --> FRAMES[5 uniformly sampled frames]
+    FRAMES --> COSMOS[Cosmos3 semantic prompt]
+    COSMOS --> PROTO[VisionLLM protobuf]
+    PROTO --> COLLECT[CPU result collector]
+    COLLECT --> INDEX[Direct alert index/UI]
 ```
 
 Direct mode không consume RT-CV metadata hoặc behavior candidate. Nó phù hợp
@@ -253,15 +251,15 @@ Một job có candidate nhưng VLM admission fail giữ trạng thái
 
 Trạng thái: implemented; phụ thuộc candidate đã persist.
 
-```text
-live RT-CV
-  -> Behavior Analytics candidate
-  -> Incident Queue selected clip
-  -> VLM Test / Realtime candidate list
-  -> Launch VLM test
-  -> copy exact selected clip to staging
-  -> Cosmos3 bounded inference
-  -> optional Save to Store
+```mermaid
+flowchart LR
+    RTCV[Live RT-CV] --> BA[Behavior Analytics candidate]
+    BA --> IQ[Incident Queue selected clip]
+    IQ --> LIST[VLM Test Realtime candidate list]
+    LIST --> LAUNCH[Launch VLM test]
+    LAUNCH --> STAGE[Exact selected clip staging]
+    STAGE --> VLM[Cosmos3 bounded inference]
+    VLM --> SAVE[Optional Save to Store]
 ```
 
 Không thể đảm bảo “zero-delay VLM” vì:
@@ -277,12 +275,13 @@ inference latency. Nếu RT-CV realtime unavailable, candidate cũ vẫn retest
 
 ## 10. VLM Test — Store retest
 
-```text
-Store asset saved after completed VLM
-  -> Launch VLM
-  -> new staging-only job referencing exact Store media
-  -> admitted Cosmos3 run
-  -> new result
+```mermaid
+flowchart LR
+    ASSET[Saved post-VLM Store asset] --> LAUNCH[Launch VLM]
+    LAUNCH --> JOB[New staging-only retest job]
+    JOB --> MEDIA[Exact Store media reference]
+    MEDIA --> VLM[Admitted Cosmos3 run]
+    VLM --> RESULT[New result]
 ```
 
 Retest không duplicate Store asset. Muốn lưu một kết quả/media version khác
@@ -292,15 +291,15 @@ phải qua explicit Save contract.
 
 Đây là plane khác VLM Test Store.
 
-```text
-browser MP4/MKV upload
-  -> bounded same-origin BFF
-  -> CPU media-intake
-  -> filename/MIME/container/H.264/SHA-256 validation
-  -> active upload manifest
-  -> prepared MP4
-  -> uploaded-media://<sha256>.mp4
-  -> Phase 13 read-only selected media
+```mermaid
+flowchart LR
+    UPLOAD[Browser MP4/MKV upload] --> BFF[Bounded same-origin BFF]
+    BFF --> INTAKE[CPU media-intake]
+    INTAKE --> VALIDATE[Filename/MIME/container/H.264/SHA-256 validation]
+    VALIDATE --> MANIFEST[Active upload manifest]
+    MANIFEST --> PREP[Prepared MP4]
+    PREP --> URI[uploaded-media://sha256.mp4]
+    URI --> SUMMARY[Phase 13 read-only selected media]
 ```
 
 MKV hợp lệ có thể được catalog nhưng `summary_ready=false` nếu chưa có remux
@@ -312,22 +311,22 @@ Trạng thái: runtime proven trên bounded evaluation set.
 
 ### Video/action
 
-```text
-selected-clip:// asset
-  -> segment ~10 seconds
-  -> sample 8 frames at 448x448
-  -> Cosmos-Embed1 FP16 TensorRT
-  -> 768-dimensional vector
-  -> vss-video-embeddings index
+```mermaid
+flowchart LR
+    ASSET[selected clip asset] --> SEG[~10-second segment]
+    SEG --> SAMPLE[8 frames at 448x448]
+    SAMPLE --> EMBED[Cosmos-Embed1 FP16 TensorRT]
+    EMBED --> VECTOR[768-dimensional vector]
+    VECTOR --> INDEX[vss-video-embeddings index]
 ```
 
 ### Object/image
 
-```text
-selected-snapshot/object crop
-  -> SigLIP2 256x256 FP16 TensorRT
-  -> 1152-dimensional vector
-  -> object embedding index
+```mermaid
+flowchart LR
+    CROP[Selected snapshot/object crop] --> EMBED[SigLIP2 256x256 FP16 TensorRT]
+    EMBED --> VECTOR[1152-dimensional vector]
+    VECTOR --> INDEX[Object embedding index]
 ```
 
 Đổi model/version/vector dimension bắt buộc đổi generation và re-index.
@@ -378,14 +377,14 @@ UTC, model/prompt version và explicit `unobserved` gaps.
 
 ## 15. Chat / LLM assistant
 
-```text
-NVIDIA VSS Chat drawer
-  -> /compat/chat/stream
-  -> same-origin gateway
-  -> verify active LLM lease
-  -> fixed Nemotron endpoint 127.0.0.1:30081
-  -> strip reasoning delimiters
-  -> SSE answer
+```mermaid
+flowchart LR
+    CHAT[NVIDIA VSS Chat drawer] --> ENDPOINT[/compat/chat/stream]
+    ENDPOINT --> BFF[Same-origin gateway]
+    BFF --> LEASE[Verify active LLM lease]
+    LEASE --> LLM[Fixed Nemotron endpoint]
+    LLM --> CLEAN[Strip reasoning delimiters]
+    CLEAN --> SSE[SSE answer]
 ```
 
 Browser-supplied provider URL bị bỏ qua. Chat không tự bật LLM. Khi LLM
@@ -416,14 +415,12 @@ Project LLM và VLM mutual-exclusive; current reserve là 5 GiB.
 
 ## 17. Observability và audit
 
-```text
-service health/metrics
-  -> Prometheus
-  -> Grafana
-
-mutating API/tool/GPU action
-  -> identity + request_id + action + outcome
-  -> structured project-local audit
+```mermaid
+flowchart TB
+    HEALTH[Service health + metrics] --> PROM[Prometheus]
+    PROM --> GRAF[Grafana]
+    ACTION[API/tool/GPU mutation] --> AUDIT[Identity + request_id + action + outcome]
+    AUDIT --> LOG[Structured project-local audit]
 ```
 
 Logs không được chứa RTSP credential, NGC key, bearer token hoặc raw cookies.
@@ -434,14 +431,14 @@ và job age là các tín hiệu vận hành chính.
 
 Trạng thái: **Locked, chưa implemented**.
 
-```text
-scheduled shelf ROI frame
-  -> quality gate
-  -> RT-DETR / occupancy candidate
-  -> SigLIP2 product/reference top-K
-  -> Cosmos3 uncertain-case verification
-  -> empty/partial/unknown/not-evaluable
-  -> planogram/SKU result with evidence
+```mermaid
+flowchart LR
+    FRAME[Scheduled shelf ROI frame] --> QUALITY[Quality gate]
+    QUALITY --> DET[RT-DETR occupancy candidate]
+    DET --> TOPK[SigLIP2 product/reference top-K]
+    TOPK --> VLM[Cosmos3 uncertain-case verification]
+    VLM --> RESULT[Empty / partial / unknown / not-evaluable]
+    RESULT --> EVIDENCE[Planogram/SKU result with evidence]
 ```
 
 Pipeline chỉ được mở khi có shelf ROI, product master, reference image,
