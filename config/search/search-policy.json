@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "store_id": "store-001",
+  "chunk_seconds": 10,
+  "chunk_overlap_seconds": 0,
+  "video_embedding": {
+    "model_id": "cosmos-embed1-448p-anomaly-detection",
+    "model_version": "1.0",
+    "dimension": 768
+  },
+  "object_embedding": {
+    "model_id": "siglip2-so400m-patch16-256",
+    "model_version": "v1.1",
+    "dimension": 1152,
+    "min_crop_pixels": 32
+  },
+  "fusion": {
+    "method": "reciprocal_rank_fusion",
+    "rank_constant": 60
+  },
+  "critic": {
+    "max_top_k": 3,
+    "frames_per_clip": 5,
+    "graceful_degradation": true
+  },
+  "media_inputs": [
+    "selected-clip://",
+    "selected-snapshot://"
+  ],
+  "raw_storage_allowed": false
+}

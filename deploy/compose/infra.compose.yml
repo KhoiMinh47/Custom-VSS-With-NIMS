@@ -1,0 +1,268 @@
+name: ntc-vss-retail-poc
+
+x-restart-policy: &restart_policy
+  restart: unless-stopped
+
+x-logging: &default_logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+  postgres:
+    <<: *restart_policy
+    image: ${POSTGRES_IMAGE:-postgres:16-bookworm}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vss_control}
+      POSTGRES_USER: ${POSTGRES_USER:-vss_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      TZ: UTC
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ../../runtime/postgres:/var/lib/postgresql/data
+      - ../../migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks: [infra]
+    logging: *default_logging
+
+  elasticsearch:
+    <<: *restart_policy
+    image: ${ELASTICSEARCH_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch:8.17.0}
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.license.self_generated.type: basic
+      bootstrap.memory_lock: "true"
+      path.repo: /mnt/snapshots
+      ES_JAVA_OPTS: ${ES_JAVA_OPTS:--Xms2g -Xmx2g}
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${ELASTICSEARCH_PORT:-9200}:9200"
+    volumes:
+      - ../../runtime/elasticsearch:/usr/share/elasticsearch/data
+      - ../../runtime/backups/elasticsearch:/mnt/snapshots
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:9200/_cluster/health?wait_for_status=yellow >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 45s
+    networks: [infra]
+    logging: *default_logging
+
+  elasticsearch-init:
+    image: ${CURL_IMAGE:-curlimages/curl:8.11.1}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    volumes:
+      - ../../config/elasticsearch:/config:ro
+    entrypoint: ["/bin/sh", "/config/bootstrap.sh"]
+    restart: "no"
+    networks: [infra]
+    logging: *default_logging
+
+  kafka:
+    <<: *restart_policy
+    image: ${KAFKA_IMAGE:-apache/kafka:3.9.0}
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: CONTROLLER://:9093,PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-MkU3OEVBNTcwNTJENDM2Qk}
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${KAFKA_PORT:-9092}:9092"
+    volumes:
+      - ../../runtime/kafka:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 8s
+      retries: 20
+      start_period: 40s
+    networks: [infra]
+    logging: *default_logging
+
+  kafka-init:
+    image: ${KAFKA_IMAGE:-apache/kafka:3.9.0}
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ../../config/broker:/config:ro
+    entrypoint: ["/bin/bash", "/config/create-topics.sh"]
+    restart: "no"
+    networks: [infra]
+    logging: *default_logging
+
+  redis:
+    <<: *restart_policy
+    image: ${REDIS_IMAGE:-redis:7.4-bookworm}
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --appendfsync
+      - everysec
+      - --requirepass
+      - ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - ../../runtime/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    networks: [infra]
+    logging: *default_logging
+
+  minio:
+    <<: *restart_policy
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2024-05-10T01-41-38Z}
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set}
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${MINIO_API_PORT:-9000}:9000"
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - ../../runtime/minio:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:9000/minio/health/live >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks: [infra]
+    logging: *default_logging
+
+  minio-init:
+    image: ${MINIO_MC_IMAGE:-minio/mc:RELEASE.2024-05-09T17-04-24Z}
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set}
+    volumes:
+      - ../../config/minio:/config:ro
+    entrypoint: ["/bin/sh", "/config/create-buckets.sh"]
+    restart: "no"
+    networks: [infra]
+    logging: *default_logging
+
+  postgres-exporter:
+    <<: *restart_policy
+    image: ${POSTGRES_EXPORTER_IMAGE:-prometheuscommunity/postgres-exporter:v0.16.0}
+    environment:
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:-vss_app}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-vss_control}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [infra]
+    logging: *default_logging
+
+  redis-exporter:
+    <<: *restart_policy
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:v1.67.0}
+    environment:
+      REDIS_ADDR: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [infra]
+    logging: *default_logging
+
+  prometheus:
+    <<: *restart_policy
+    image: ${PROMETHEUS_IMAGE:-prom/prometheus:v3.1.0}
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
+      - --web.enable-lifecycle
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ../../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../../runtime/prometheus:/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    depends_on:
+      postgres-exporter:
+        condition: service_started
+      redis-exporter:
+        condition: service_started
+    networks: [infra]
+    logging: *default_logging
+
+  grafana:
+    <<: *restart_policy
+    image: ${GRAFANA_IMAGE:-grafana/grafana:11.5.1}
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_DOMAIN: localhost
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    ports:
+      - "${INFRA_BIND_ADDRESS:-127.0.0.1}:${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ../../runtime/grafana:/var/lib/grafana
+      - ../../config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks: [infra]
+    logging: *default_logging
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    driver: bridge
+    internal: false

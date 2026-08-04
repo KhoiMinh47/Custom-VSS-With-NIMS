@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ntc.local/schemas/incident.schema.json",
+  "title": "Phase 10 Candidate Incident",
+  "type": "object",
+  "required": [
+    "@timestamp",
+    "schema_version",
+    "store_id",
+    "camera_id",
+    "incident_id",
+    "event_id",
+    "event_type",
+    "status",
+    "verdict",
+    "clip_start_time",
+    "clip_end_time",
+    "asset_uri",
+    "clip_sha256",
+    "model_id",
+    "model_version"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "store_id": {"type": "string", "minLength": 1},
+    "camera_id": {"type": "string", "minLength": 1},
+    "incident_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "event_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["preparing_clip", "queued_for_verification", "verified", "needs_review"]},
+    "verdict": {"enum": ["pending", "confirmed", "rejected", "uncertain"]},
+    "asset_uri": {"type": "string", "pattern": "^selected-clip://"},
+    "clip_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": true
+}

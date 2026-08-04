@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0.0",
+  "store": {
+    "store_id": "store-001",
+    "name": "Phase 06 simulated store",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "backend_timestamps": "UTC"
+  },
+  "source_mode": "simulated_replay",
+  "cameras": [
+    {
+      "camera_id": "cam-01",
+      "name": "Entrance",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-01/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-01/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-02",
+      "name": "Exit",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-02/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-02/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-03",
+      "name": "Checkout 1",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-03/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-03/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-04",
+      "name": "Checkout 2",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-04/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-04/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-05",
+      "name": "High traffic area",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-05/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-05/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-06",
+      "name": "Shelf A",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-06/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-06/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-07",
+      "name": "Shelf B",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-07/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-07/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-08",
+      "name": "Shelf C",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-08/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-08/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-09",
+      "name": "Back room",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-09/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-09/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    },
+    {
+      "camera_id": "cam-10",
+      "name": "Overview",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://phase06/cam-10/main", "codec": "h264", "width": 640, "height": 360, "fps": 10},
+      "ai_substream": {"uri_secret_ref": "camera://phase06/cam-10/ai", "codec": "h264", "width": 640, "height": 360, "fps": 5}
+    }
+  ],
+  "recording": {
+    "enabled": true,
+    "retention_days": 7,
+    "raw_storage_path": "runtime/raw-video"
+  },
+  "reconnect": {
+    "initial_delay_seconds": 1,
+    "max_delay_seconds": 30,
+    "multiplier": 2,
+    "jitter_percent": 20
+  }
+}

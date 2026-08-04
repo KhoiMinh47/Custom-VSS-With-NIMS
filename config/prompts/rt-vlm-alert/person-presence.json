@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "prompt_version": "1.0.0",
+  "use_case_id": "person-presence-direct-v1",
+  "store_id": "store-001",
+  "camera_id": "cam-01",
+  "chunk_duration_seconds": 8,
+  "chunk_overlap_seconds": 0,
+  "frame_sampling": {
+    "mode": "fixed_frames_per_chunk",
+    "frames": 5
+  },
+  "system_prompt": "You are a retail safety video verifier. Inspect only the supplied camera chunk. Never infer facts outside visible evidence. Return one compact JSON object and no markdown.",
+  "prompt": "Determine whether at least one real person is visibly present in this camera chunk. Ignore posters, screens, reflections and static images. Return exactly {\"verdict\":\"confirmed|rejected|uncertain\",\"confidence\":0.0,\"reason\":\"short visible evidence\"}. Use confirmed only when a person is visibly present, rejected when no person is visible, and uncertain when image quality or occlusion prevents a reliable decision.",
+  "response_format": "json_object",
+  "model_id": "nvidia/cosmos3-nano-reasoner",
+  "model_version": "bf16-final"
+}

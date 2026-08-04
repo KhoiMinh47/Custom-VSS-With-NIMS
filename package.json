@@ -1,0 +1,9 @@
+{
+  "name": "ntc-vss-retail-poc",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "scripts": {
+    "test": ".venv/bin/python -m pytest -q tests/unit/test_phase15.py"
+  }
+}

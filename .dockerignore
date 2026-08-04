@@ -1,0 +1,15 @@
+.git
+.venv
+.cache
+.secrets
+runtime
+artifacts
+models
+data/raw-samples
+data/clips
+data/snapshots
+data/thumbnails
+data/test-videos
+third_party
+node_modules
+*.log

@@ -1,0 +1,15 @@
+{
+  "properties": {
+    "embedding_generation": { "type": "keyword" },
+    "object_embedding_id": { "type": "keyword" },
+    "object_id": { "type": "keyword" },
+    "asset_id": { "type": "keyword" },
+    "source_type": { "type": "keyword" },
+    "frame_time": { "type": "date" },
+    "model_dimension": { "type": "integer" },
+    "track_id": { "type": "keyword" },
+    "object_class": { "type": "keyword" },
+    "bbox": { "type": "float" },
+    "evidence": { "type": "flattened" }
+  }
+}

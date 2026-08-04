@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ntc:vss:behavior-event:1.0.0",
+  "title": "Phase 09 behavior event",
+  "type": "object",
+  "required": [
+    "@timestamp", "schema_version", "store_id", "camera_id", "event_id",
+    "event_type", "model_id", "model_version", "config_version", "evidence",
+    "payload"
+  ],
+  "properties": {
+    "@timestamp": {"type": "string", "pattern": "Z$"},
+    "schema_version": {"const": "1.0.0"},
+    "store_id": {"type": "string", "minLength": 1},
+    "camera_id": {"type": "string", "minLength": 1},
+    "event_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "event_type": {"type": "string", "minLength": 1},
+    "model_id": {"const": "ntc-retail-traffic-rules"},
+    "model_version": {"const": "1.0.0"},
+    "config_version": {"type": "integer", "minimum": 1},
+    "candidate": {"type": "boolean"},
+    "evaluation": {"type": "boolean"},
+    "evaluation_run_id": {"type": "string"},
+    "evidence": {
+      "type": "object",
+      "required": ["kind", "frame_id", "reference", "track_ids"],
+      "properties": {
+        "kind": {"const": "rt_cv_metadata"},
+        "frame_id": {"type": "string"},
+        "reference": {"type": "string", "pattern": "^rtcv://"},
+        "track_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "payload": {"type": "object"}
+  }
+}

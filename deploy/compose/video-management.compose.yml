@@ -1,0 +1,157 @@
+name: ntc-vss-retail-poc-video
+
+services:
+  vios-postgres:
+    image: postgres:17.9-alpine@sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609
+    container_name: ntc-vss-phase06-postgres
+    network_mode: host
+    user: "0:0"
+    environment:
+      POSTGRES_USER: vst
+      POSTGRES_DB: nvcentralizedb
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGPORT: "55432"
+    command:
+      - postgres
+      - -p
+      - "55432"
+      - -c
+      - unix_socket_directories=/var/run/postgresql
+    volumes:
+      - ../../runtime/vios/postgres:/var/lib/postgresql/data
+      - ../../runtime/vios/data:/var/run/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h /var/run/postgresql -p 55432 -U vst -d nvcentralizedb"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    restart: unless-stopped
+
+  vios-redis:
+    image: redis:8.6.2-alpine@sha256:c5e375abb885e6b2021c0377879e4890bf76f9065b8922ffc113f2b226b9fc17
+    container_name: ntc-vss-phase06-redis
+    network_mode: host
+    command: ["redis-server", "--port", "16379", "--appendonly", "yes", "--dir", "/data"]
+    volumes:
+      - ../../runtime/vios/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "16379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  simulated-cameras:
+    profiles: [simulated]
+    image: ntc-vss-retail-poc/video-source:3.2.1-phase06
+    container_name: ntc-vss-phase06-simulated-cameras
+    network_mode: host
+    runtime: nvidia
+    user: "0:0"
+    environment:
+      ADAPTOR: streamer
+      HTTP_PORT: "31000"
+      RTSP_SERVER_PORT: "31554"
+    volumes:
+      - ../../runtime/vios/config/nvstreamer-vst-config.json:/home/vst/vst_release/configs/vst_config.json:ro
+      - ../../runtime/vios/config/vst-storage.json:/home/vst/vst_release/configs/vst_storage.json:ro
+      - ../../runtime/simulated-cameras:/home/vst/vst_release/streamer_videos
+      - ../../runtime/vios/nvstreamer:/home/vst/vst_release/vst_data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/31000'"]
+      interval: 10s
+      timeout: 3s
+      retries: 60
+      start_period: 10s
+    restart: unless-stopped
+
+  vios-streamprocessing:
+    image: ntc-vss-retail-poc/vios-streamprocessing:3.2.1-phase06
+    container_name: ntc-vss-phase06-streamprocessing
+    network_mode: host
+    runtime: nvidia
+    user: "0:0"
+    environment:
+      ADAPTOR: vst_rtsp
+      CONTAINER_NAME: vss-vios-streamprocessing
+      HTTP_PORT: "30001"
+      RTSP_SERVER_PORT: "30554"
+      CENTRALIZE_DB_NAME: nvcentralizedb
+      CENTRALIZE_DB_USERNAME: vst
+      PGPORT: "55432"
+      SENSOR_MODULE_ENDPOINT: http://127.0.0.1:30000
+      VST_INGRESS_ENDPOINT: 127.0.0.1:30888/vst
+      ENABLE_AGING_POLICY: "true"
+      VST_VIDEO_STORAGE_SIZE_MB: "20000"
+    volumes:
+      - ../../runtime/vios/config:/home/vst/vst_release/configs:ro
+      - ../../runtime/vios/data:/home/vst/vst_release/vst_data
+      - ../../runtime/raw-video:/home/vst/vst_release/vst_video
+      - ../../runtime/clips:/home/vst/vst_release/streamer_videos
+      - ../../runtime/vios/temp:/home/vst/vst_release/webroot/temp_files
+    depends_on:
+      vios-postgres:
+        condition: service_healthy
+      vios-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/30001'"]
+      interval: 20s
+      timeout: 5s
+      retries: 75
+      start_period: 20s
+    restart: unless-stopped
+
+  vios-sensor:
+    image: nvcr.io/nvidia/vss-core/vss-vios-sensor:3.2.1@sha256:6dd443f43acd52b00c449238907f38a936d8e3f5d7fb77765d4ece82b3c24cc7
+    container_name: ntc-vss-phase06-sensor
+    network_mode: host
+    runtime: nvidia
+    user: "0:0"
+    environment:
+      ADAPTOR: vst_rtsp
+      NEED_RECORDING: "false"
+      NEED_RTSPSERVER: "false"
+      NEED_STORAGE: "false"
+      NEED_STREAM_MONITORING: "true"
+      HTTP_PORT: "30000"
+      CENTRALIZE_DB_NAME: nvcentralizedb
+      CENTRALIZE_DB_USERNAME: vst
+      PGPORT: "55432"
+      STREAM_PROCESSOR_MODULE_ENDPOINT: http://127.0.0.1:30001
+    volumes:
+      - ../../runtime/vios/config:/home/vst/vst_release/configs:ro
+      - ../../runtime/vios/data:/home/vst/vst_release/vst_data
+      - ../../runtime/raw-video:/home/vst/vst_release/vst_video
+    depends_on:
+      vios-postgres:
+        condition: service_healthy
+      vios-streamprocessing:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/30000'"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+    restart: unless-stopped
+
+  vios-ingress:
+    image: nvcr.io/nvidia/vss-core/vss-vios-ingress:3.2.1@sha256:ecee4b30ab5e76fa5d342ba4c7ade5b3f176dbb2543ccad03d07759fea2a5e47
+    container_name: ntc-vss-phase06-ingress
+    network_mode: host
+    user: "0:0"
+    environment:
+      VST_INGRESS_HTTP_PORT: "30888"
+    volumes:
+      - ../../runtime/vios/config/nginx-vst-direct.conf:/etc/nginx/nginx.conf:ro
+      - ../../runtime/vios/nginx-logs:/var/log/nginx
+    depends_on:
+      vios-sensor:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/30888'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped

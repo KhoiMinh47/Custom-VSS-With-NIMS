@@ -1,0 +1,142 @@
+name: ntc-vss-retail-poc-rtcv
+
+x-logging: &structured_logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-rtcv-image: &rtcv_image
+  nvcr.io/nvidia/vss-core/vss-rt-cv:3.2.1@sha256:1a8b9879686f21cb6b9589d6139b5ac2eb960f1520aa3b4bb5f079d05fee9458
+
+services:
+  rtsp-relay:
+    image: ntc-vss-retail-poc/rtcv-relay:3.2.1-phase07
+    container_name: ntc-vss-phase07-rtsp-relay
+    entrypoint: []
+    command:
+      - python3
+      - /opt/ntc/rtcv/log_supervisor.py
+      - python3
+      - /opt/ntc/rtcv/secure_rtsp_relay.py
+    environment:
+      CAMERA_SECRET_SOCKET: /run/ntc-secrets/camera-secret.sock
+      VIOS_STREAMS_URL: http://192.168.2.74:30888/vst/api/v1/sensor/streams
+      RELAY_RTSP_PORT: "39554"
+      RELAY_HEALTH_PORT: "39101"
+      GST_DEBUG: "1"
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ../../services/rt-cv:/opt/ntc/rtcv:ro
+      - ../../runtime/secrets:/run/ntc-secrets:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:39101/health/ready', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [infra]
+    restart: unless-stopped
+    logging: *structured_logging
+
+  rt-cv:
+    image: *rtcv_image
+    container_name: ntc-vss-phase07-rtcv
+    entrypoint: []
+    command:
+      - python3
+      - /opt/ntc/rtcv/log_supervisor.py
+      - /opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/ds-start.sh
+    environment:
+      DS_MODEL_FAMILY: rtdetr-warehouse
+      DS_MODE_FLAG: "1"
+      # The 720p relay is 25 FPS and inference interval is 4: publish every
+      # fifth frame to keep the stable metadata path aligned with the 5 FPS target.
+      DS_MESSAGE_RATE: "5"
+      DS_TRACKER_REID: "false"
+      DS_SHOW_SENSOR_ID: "true"
+      STREAM_TYPE: kafka
+      DEEPSTREAM_ENABLE_SENSOR_ID_EXTRACTION: "1"
+      GST_ENABLE_CUSTOM_PARSER_MODIFICATIONS: "1"
+      GST_DEBUG: "1"
+      OTEL_SDK_DISABLED: "true"
+    ports:
+      - "127.0.0.1:39000:39000"
+    volumes:
+      - ../../services/rt-cv:/opt/ntc/rtcv:ro
+      - ../../config/deepstream:/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/configs:ro
+      - ../../third_party/video-search-and-summarization/deploy/docker/services/rtvi/rtvi-cv/ds-start.sh:/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/ds-start.sh:ro
+      - ../../.cache/tensorrt/GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0/rtdetr/fp16:/opt/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    depends_on:
+      rtsp-relay:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:39000/api/v1/ready', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 90
+      start_period: 180s
+    networks: [infra]
+    restart: unless-stopped
+    logging: *structured_logging
+
+  rtcv-metadata:
+    image: *rtcv_image
+    container_name: ntc-vss-phase07-metadata
+    entrypoint: ["python3", "/opt/ntc/rtcv/metadata_service.py"]
+    environment:
+      ANALYTICS_CONFIG: /config/cam-01.yaml
+      NVIDIA_PROTO_DIR: /opt/nvidia-protos
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CONSUMER_GROUP: phase07-rtcv-indexer-v1
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      HTTP_PORT: "8080"
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "127.0.0.1:39080:8080"
+    volumes:
+      - ../../services/rt-cv:/opt/ntc/rtcv:ro
+      - ../../config/analytics:/config:ro
+      - ../../third_party/video-search-and-summarization/tools/message-broker-consumers:/opt/nvidia-protos:ro
+    depends_on:
+      rt-cv:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/live', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [infra]
+    restart: unless-stopped
+    logging: *structured_logging
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

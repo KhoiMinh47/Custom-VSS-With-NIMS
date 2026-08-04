@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "renderer_model_id": "ntc-phase13-evidence-report-renderer",
+  "renderer_model_version": "1.0.0",
+  "formats": ["json", "markdown"],
+  "report_types": ["incident", "shift", "daily"],
+  "require_timestamped_evidence": true,
+  "unobserved_gap_label": "unobserved"
+}

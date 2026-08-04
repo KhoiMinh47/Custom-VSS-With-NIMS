@@ -1,0 +1,104 @@
+name: ntc-vss-retail-poc-phase11
+
+x-logging: &structured_logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-rt-vlm-image: &rt_vlm_image
+  nvcr.io/nvidia/vss-core/vss-rt-vlm:3.2.1@sha256:5403e0c8fa8b149e7ad15ab1b063b78d610e7a50297dba6ca550ac5cc5ef9504
+
+services:
+  rt-vlm-results:
+    image: *rt_vlm_image
+    container_name: ntc-vss-phase11-rt-vlm-results
+    entrypoint: ["python3", "/opt/ntc/direct/collector.py"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CONSUMER_GROUP: phase11-direct-results-v1
+      INPUT_TOPIC: vss.rt-vlm.captions
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      RT_VLM_URL: http://rt-vlm:8000
+      RESOURCE_METRICS_PATH: /opt/ntc/runtime/resource-metrics.json
+      HTTP_PORT: "8080"
+      PYTHONPATH: /opt/ntc/direct:/opt/nvidia/rtvi/rtvi
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/rt-vlm-alert:/opt/ntc/direct:ro
+      - ../../runtime/phase11-monitor:/opt/ntc/runtime:ro
+    ports:
+      - "127.0.0.1:39210:8080"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+    networks: [infra]
+    logging: *structured_logging
+
+  rt-vlm:
+    image: *rt_vlm_image
+    container_name: ntc-vss-phase11-rt-vlm
+    profiles: [direct]
+    user: "1001:1001"
+    shm_size: 4gb
+    runtime: nvidia
+    environment:
+      VLM_MODEL_TO_USE: openai-compat
+      VIA_VLM_ENDPOINT: http://poc-cosmos3:8000/v1
+      VIA_VLM_OPENAI_MODEL_DEPLOYMENT_NAME: nvidia/cosmos3-nano-reasoner
+      VIA_VLM_API_KEY: not-used
+      OPENAI_API_KEY: not-used
+      NUM_GPUS: "1"
+      NUM_VLM_PROCS: "1"
+      VLM_BATCH_SIZE: "1"
+      VLM_DEFAULT_NUM_FRAMES_PER_SECOND_OR_FIXED_FRAMES_CHUNK: "5"
+      VLM_MAX_GENERATION_TOKENS: "1024"
+      VLM_PROMPT_MAX_LENGTH: "4096"
+      VLM_SYSTEM_PROMPT_MAX_LENGTH: "2048"
+      VLM_INPUT_WIDTH: "1280"
+      VLM_INPUT_HEIGHT: "720"
+      NVIDIA_VISIBLE_DEVICES: "0"
+      KAFKA_ENABLED: "true"
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: vss.rt-vlm.captions
+      KAFKA_INCIDENT_TOPIC: vss.rt-vlm.incidents
+      ERROR_MESSAGE_TOPIC: vss.rt-vlm.errors
+      RTVI_RTSP_LATENCY: "200"
+      RTVI_RTSP_TIMEOUT: "10"
+      RTVI_RTSP_RECONNECTION_INTERVAL: "5"
+      RTVI_RTSP_RECONNECTION_WINDOW: "60"
+      RTVI_RTSP_RECONNECTION_MAX_ATTEMPTS: "10"
+      RTVI_DISABLE_LIVESTREAM_PREVIEW: "true"
+      RTVI_ADD_TIMESTAMP_TO_VLM_PROMPT: "true"
+      RTVI_VIDEO_METADATA_ABSOLUTE_TIMESTAMPS: "true"
+      ENABLE_OTEL_MONITORING: "false"
+      LOG_LEVEL: INFO
+      TZ: UTC
+    ports:
+      - "127.0.0.1:39200:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/v1/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+    restart: "no"
+    networks: [infra]
+    logging: *structured_logging
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "component": "nv-metropolis-bp-vss-ui",
+  "release_baseline": "3.2.1",
+  "source_repository": "https://github.com/NVIDIA-AI-Blueprints/video-search-and-summarization",
+  "source_tag": "v3.2.1",
+  "source_commit": "7640d917047cf7b0fd3085eefb8282754b56bc94",
+  "source_root": "third_party/video-search-and-summarization/services/ui",
+  "application_source": "services/ui/apps/nv-metropolis-bp-vss-ui",
+  "package_source": "services/ui/packages/nv-metropolis-bp-vss-ui",
+  "image": "nvcr.io/nvidia/vss-core/vss-agent-ui:3.2.0",
+  "image_digest": "sha256:6362151a839067f517766f1997a19c302296fe80b9b0251aaee8f16b379503d9",
+  "image_id": "sha256:a1f6290606d31b7d592ebe80fd6bef58512555e28cbe8626dcd860644436daee",
+  "note": "The 3.2.0 UI image tag is intentional in the NVIDIA VSS 3.2.1 deployment assets."
+}

@@ -1,0 +1,19 @@
+{
+  "index_patterns": [
+    "mdx-raw-*",
+    "mdx-incidents-*",
+    "mdx-vlm-incidents-*",
+    "vss-behavior-events-*",
+    "vss-captions-*",
+    "vss-summaries-*",
+    "retail-shelf-results-*",
+    "vss-system-events-*"
+  ],
+  "composed_of": ["vss-common-fields"],
+  "priority": 200,
+  "template": {},
+  "_meta": {
+    "schema_version": 1,
+    "description": "Common VSS event, incident, caption, summary and retail result mappings"
+  }
+}

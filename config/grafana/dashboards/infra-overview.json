@@ -1,0 +1,38 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "PostgreSQL exporter up",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "up{job=\"postgres\"}", "refId": "A" }],
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Redis exporter up",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "up{job=\"redis\"}", "refId": "A" }],
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Redis connected clients",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "redis_connected_clients", "refId": "A" }],
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 }
+    }
+  ],
+  "schemaVersion": 40,
+  "tags": ["vss", "infrastructure"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "utc",
+  "title": "VSS PoC Infrastructure",
+  "uid": "vss-infra-overview",
+  "version": 1
+}

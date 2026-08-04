@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "store": {
+    "store_id": "store-001",
+    "name": "Single physical-camera VSS store",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "backend_timestamps": "UTC"
+  },
+  "source_mode": "physical_camera_only",
+  "cameras": [
+    {
+      "camera_id": "cam-01",
+      "name": "Physical Camera 01",
+      "enabled": true,
+      "main_stream": {"uri_secret_ref": "camera://keyring/physical-cam-01/main", "codec": "h265", "width": 2560, "height": 1440, "fps": 25},
+      "ai_substream": {"uri_secret_ref": "camera://keyring/physical-cam-01/ai", "codec": "h264", "width": 1280, "height": 720, "fps": 25}
+    }
+  ],
+  "recording": {
+    "enabled": true,
+    "retention_days": 7,
+    "raw_storage_path": "runtime/raw-video"
+  },
+  "reconnect": {
+    "initial_delay_seconds": 1,
+    "max_delay_seconds": 30,
+    "multiplier": 2,
+    "jitter_percent": 20
+  }
+}

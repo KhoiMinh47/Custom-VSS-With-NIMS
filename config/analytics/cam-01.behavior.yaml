@@ -1,0 +1,49 @@
+schema_version: "1.0.0"
+store_id: store-001
+camera_id: cam-01
+config_version: 1
+coordinate_space: normalized
+calibration_status: provisional
+object_types: [Person]
+source:
+  topic: vss.rt-cv.frames
+  model_id: rtdetr-warehouse-2d
+  model_version: "1.0.2"
+tracking:
+  tracker_id: nvdcf
+  ttl_seconds: 5
+people_counting:
+  line:
+    id: cam-01-entrance-line-v1
+    start: [0.5, 0.05]
+    end: [0.5, 0.95]
+    deadband: 0.02
+    directions:
+      positive_to_negative: entry
+      negative_to_positive: exit
+zones:
+  - id: cam-01-entrance-zone-v1
+    name: Entrance
+    type: entrance
+    polygon: [[0.30, 0.05], [0.70, 0.05], [0.70, 0.95], [0.30, 0.95]]
+    dwell_threshold_seconds: 2
+  - id: cam-01-queue-zone-v1
+    name: Queue baseline
+    type: queue
+    polygon: [[0.30, 0.45], [0.65, 0.45], [0.65, 0.98], [0.30, 0.98]]
+    dwell_threshold_seconds: 3
+  - id: cam-01-restricted-zone-v1
+    name: Restricted baseline
+    type: restricted
+    polygon: [[0.68, 0.05], [0.98, 0.05], [0.98, 0.98], [0.68, 0.98]]
+    dwell_threshold_seconds: 2
+queue:
+  id: cam-01-queue-rule-v1
+  zone_id: cam-01-queue-zone-v1
+  length_threshold: 1
+  wait_threshold_seconds: 3
+heatmap:
+  id: cam-01-traffic-heatmap-v1
+  columns: 16
+  rows: 9
+  emit_interval_seconds: 5

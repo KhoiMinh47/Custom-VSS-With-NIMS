@@ -1,0 +1,51 @@
+name: ntc-vss-retail-poc-behavior
+
+services:
+  behavior-analytics:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase09-behavior-analytics
+    entrypoint: ["python3", "/opt/ntc/behavior/service.py"]
+    environment:
+      ANALYTICS_CONFIG: /config/cam-01.behavior.yaml
+      ANALYTICS_CONFIG_OVERRIDE: /runtime/config.json
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CONSUMER_GROUP: phase09-behavior-analytics-v1
+      INPUT_TOPIC: vss.rt-cv.frames
+      OUTPUT_TOPIC: vss.behavior.events
+      DLQ_TOPIC: vss.dlq
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      HTTP_PORT: "8080"
+      PYTHONPATH: /opt/ntc/behavior:/opt/ntc/heatmap
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    ports:
+      - "127.0.0.1:39110:8080"
+    volumes:
+      - ../../services/behavior-analytics:/opt/ntc/behavior:ro
+      - ../../services/heatmap:/opt/ntc/heatmap:ro
+      - ../../config/analytics:/config:ro
+      - ../../runtime/behavior-analytics:/runtime
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [infra]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

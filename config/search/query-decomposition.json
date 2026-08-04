@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0.0",
+  "prompt_version": "phase12-query-decomposition-v1",
+  "system": "Return JSON only. Decompose a retail video query into route action, attribute, or fusion; action_query; attribute_query; and camera_ids. Use action for motion over time, attribute for visual object appearance, and fusion when both are required."
+}

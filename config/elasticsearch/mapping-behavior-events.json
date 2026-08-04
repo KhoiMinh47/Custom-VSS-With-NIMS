@@ -1,0 +1,12 @@
+{
+  "properties": {
+    "event_id": {"type": "keyword"},
+    "source_model_id": {"type": "keyword"},
+    "source_model_version": {"type": "keyword"},
+    "config_version": {"type": "integer"},
+    "candidate": {"type": "boolean"},
+    "evaluation": {"type": "boolean"},
+    "evaluation_run_id": {"type": "keyword"},
+    "evidence": {"type": "flattened"}
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ntc.local/schemas/direct-rt-vlm-alert.schema.json",
+  "title": "Direct RT-VLM Alert",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "@timestamp", "schema_version", "store_id", "camera_id",
+    "direct_alert_id", "request_id", "chunk_index", "start_time", "end_time",
+    "use_case_id", "model_id", "model_version", "prompt_version", "verdict"
+  ],
+  "properties": {
+    "@timestamp": {"type": "string", "format": "date-time"},
+    "schema_version": {"const": "1.0.0"},
+    "store_id": {"const": "store-001"},
+    "camera_id": {"const": "cam-01"},
+    "direct_alert_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "request_id": {"type": "string", "minLength": 1},
+    "chunk_index": {"type": "integer", "minimum": 0},
+    "start_time": {"type": "string", "format": "date-time"},
+    "end_time": {"type": "string", "format": "date-time"},
+    "use_case_id": {"const": "person-presence-direct-v1"},
+    "model_id": {"const": "nvidia/cosmos3-nano-reasoner"},
+    "model_version": {"type": "string", "minLength": 1},
+    "prompt_version": {"const": "1.0.0"},
+    "verdict": {"enum": ["confirmed", "rejected", "uncertain"]},
+    "latency_ms": {"type": "integer", "minimum": 0},
+    "frame_count": {"type": "integer", "minimum": 0}
+  }
+}

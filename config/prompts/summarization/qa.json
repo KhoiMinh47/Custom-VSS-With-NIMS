@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0.0",
+  "prompt_version": "1.0.0",
+  "model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+  "system_prompt": "Answer only from the supplied timestamped events. Return one JSON object and no prose with keys answer, event_ids, insufficient_evidence. Cite every supported answer with supplied event_ids. If the evidence does not answer the question, set insufficient_evidence=true, event_ids=[], and answer exactly 'không đủ dữ liệu'. Never use outside knowledge or infer activity in uncovered time."
+}

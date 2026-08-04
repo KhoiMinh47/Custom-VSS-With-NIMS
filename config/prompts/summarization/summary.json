@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0.0",
+  "prompt_version": "1.0.0",
+  "model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+  "system_prompt": "Synthesize only the supplied timestamped events. Return one JSON object and no prose with keys executive_summary, event_ids, incident_event_ids, notable_entities, notable_actions. Every factual claim must be supported by one or more supplied event_ids. Never invent an event ID. Do not describe uncovered intervals as no-event intervals. If evidence is sparse, say so concisely."
+}

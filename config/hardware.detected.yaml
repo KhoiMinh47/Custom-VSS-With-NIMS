@@ -1,0 +1,57 @@
+schema_version: 1
+detected_at: "2026-07-23T05:24:00Z"
+result: BLOCKED
+host:
+  os:
+    id: almalinux
+    version: "8.10"
+    kernel: "4.18.0-553.124.4.el8_10.x86_64"
+  cpu:
+    model: "Intel(R) Xeon(R) Silver 4210 CPU @ 2.20GHz"
+    logical_cpus: 40
+    gate: PASS
+  memory:
+    bytes: 134272749568
+    gate: PASS
+  project_filesystem:
+    type: xfs
+    total_bytes: 398746431488
+    free_bytes: 148877623296
+    minimum_total_bytes: 1000000000000
+    minimum_free_bytes: 250000000000
+    gate: FAIL
+gpu:
+  index: 0
+  name: NVIDIA RTX PRO 5000 Blackwell
+  uuid: GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0
+  memory_total_mib: 48935
+  compute_capability: "12.0"
+  power_limit_w: 300
+  driver: "590.48.01"
+  vss_validation_status: OTHER-experimental
+  cdi_visible: true
+  cuda_container_visible: true
+  hardware_gate: PASS
+  driver_gate: FAIL
+software:
+  docker:
+    version: "26.1.3"
+    required: ">=28.3.3,<29.5.0"
+    gate: FAIL
+  docker_compose:
+    version: "2.27.0"
+    required: ">=2.39.1"
+    gate: FAIL
+  nvidia_container_toolkit:
+    version: "1.19.0"
+    required: ">=1.17.8"
+    gate: PASS
+  ngc_cli:
+    version: NOT_FOUND
+    required: ">=4.10.0"
+    gate: FAIL
+credentials:
+  ngc_api_key_loaded: true
+  value_recorded: false
+active_profile: infra
+gpu_services_active: 0

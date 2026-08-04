@@ -1,0 +1,118 @@
+name: ntc-vss-retail-poc-phase10
+
+services:
+  media-preparation:
+    image: ntc-vss-retail-poc/rtcv-relay:3.2.1-phase07
+    container_name: ntc-vss-phase10-media-preparation
+    entrypoint: ["python3", "/opt/ntc/incidents/media_preparation.py"]
+    environment:
+      SELECTED_CLIP_DIR: /runtime/clips
+      HTTP_PORT: "8080"
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/incidents:/opt/ntc/incidents:ro
+      - ../../runtime/incidents/clips:/runtime/clips
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+    restart: unless-stopped
+    networks: [infra]
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "5"}
+
+  incidents:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase10-incidents
+    entrypoint: ["python3", "/opt/ntc/incidents/service.py"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CONSUMER_GROUP: phase10-incidents-v1
+      INPUT_TOPIC: vss.behavior.events
+      OUTPUT_TOPIC: vss.incidents.candidate
+      DLQ_TOPIC: vss.dlq
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      VIOS_BASE_URL: http://host.docker.internal:30888/vst
+      MEDIA_PREPARATION_URL: http://media-preparation:8080
+      SELECTED_CLIP_DIR: /runtime/clips
+      PRE_ROLL_SECONDS: "4"
+      POST_ROLL_SECONDS: "4"
+      HTTP_PORT: "8080"
+      PYTHONPATH: /opt/ntc/incidents
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/incidents:/opt/ntc/incidents:ro
+      - ../../runtime/incidents/clips:/runtime/clips
+    ports:
+      - "127.0.0.1:39121:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      media-preparation:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+    networks: [infra]
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "5"}
+
+  alert-verification:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase10-alert-verification
+    entrypoint: ["python3", "/opt/ntc/verification/service.py"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CONSUMER_GROUP: phase10-alert-verification-v1
+      INPUT_TOPIC: vss.incidents.candidate
+      OUTPUT_TOPIC: vss.incidents.verified
+      DLQ_TOPIC: vss.dlq
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      VLM_BASE_URL: http://poc-cosmos3:8000/v1
+      VLM_MODEL: nvidia/cosmos3-nano-reasoner
+      VLM_ATTEMPTS: "3"
+      VLM_TIMEOUT_SECONDS: "240"
+      SELECTED_CLIP_DIR: /runtime/clips
+      VLM_TEST_DIR: /runtime/phase15/vlm-test
+      ADMISSION_LEASE: /runtime/admission/local-vlm.lease
+      PROMPT_CONFIG: /config/prompts/verification.json
+      HTTP_PORT: "8080"
+      PYTHONPATH: /opt/ntc/verification
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/alert-verification:/opt/ntc/verification:ro
+      - ../../config/prompts/alert-verification:/config/prompts:ro
+      - ../../runtime/incidents/clips:/runtime/clips:ro
+      - ../../runtime/phase15/vlm-test:/runtime/phase15/vlm-test:ro
+      - ../../runtime/gpu-admission:/runtime/admission:ro
+    ports:
+      - "127.0.0.1:39120:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+    networks: [infra]
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "5"}
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

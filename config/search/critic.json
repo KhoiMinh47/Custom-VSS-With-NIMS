@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0.0",
+  "prompt_version": "phase12-search-critic-v1",
+  "system": "Judge whether the selected prepared video clip is relevant to the query. Return JSON only with verdict relevant, not_relevant, or uncertain; confidence from 0 to 1; and a short evidence-grounded reason."
+}

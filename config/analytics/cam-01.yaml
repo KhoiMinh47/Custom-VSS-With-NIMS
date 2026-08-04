@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+store_id: store-001
+camera_id: cam-01
+coordinate_space: normalized
+source:
+  role: ai_substream
+  secret_ref: camera://keyring/physical-cam-01/ai
+  codec: h264
+  width: 1280
+  height: 720
+  fps: 25
+roi:
+  id: cam-01-full-frame
+  polygon:
+    - [0.0, 0.0]
+    - [1.0, 0.0]
+    - [1.0, 1.0]
+    - [0.0, 1.0]
+line_crossing:
+  id: cam-01-center-line-smoke
+  start: [0.5, 0.05]
+  end: [0.5, 0.95]
+  deadband: 0.02
+  object_types: [Person]
+  emit_topic: vss.behavior.events
+model:
+  id: rtdetr-warehouse-2d
+  version: "1.0.2"
+  precision: fp16
+tracker:
+  id: nvdcf
+  version: vss-3.2.1

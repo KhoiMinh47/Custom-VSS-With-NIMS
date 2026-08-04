@@ -1,0 +1,42 @@
+{
+  "properties": {
+    "@timestamp": {"type": "date"},
+    "schema_version": {"type": "keyword"},
+    "store_id": {"type": "keyword"},
+    "camera_id": {"type": "keyword"},
+    "chunk_id": {"type": "keyword"},
+    "chunk_index": {"type": "integer"},
+    "start_time": {"type": "date"},
+    "end_time": {"type": "date"},
+    "asset_uri": {"type": "keyword", "index": false},
+    "asset_sha256": {"type": "keyword"},
+    "caption": {"type": "text"},
+    "events": {
+      "type": "nested",
+      "properties": {
+        "event_id": {"type": "keyword"},
+        "description": {"type": "text"},
+        "start_time": {"type": "date"},
+        "end_time": {"type": "date"},
+        "importance": {"type": "keyword"},
+        "camera_id": {"type": "keyword"},
+        "asset_uri": {"type": "keyword"},
+        "chunk_id": {"type": "keyword"}
+      }
+    },
+    "observed_entities": {"type": "keyword"},
+    "observed_actions": {"type": "keyword"},
+    "model_id": {"type": "keyword"},
+    "model_version": {"type": "keyword"},
+    "prompt_version": {"type": "keyword"},
+    "frame_sampling": {"type": "keyword"},
+    "evidence": {
+      "properties": {
+        "asset_uri": {"type": "keyword"},
+        "start_time": {"type": "date"},
+        "end_time": {"type": "date"},
+        "selected_media": {"type": "boolean"}
+      }
+    }
+  }
+}

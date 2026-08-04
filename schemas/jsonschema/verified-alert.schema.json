@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ntc.local/schemas/verified-alert.schema.json",
+  "title": "Phase 10 Verified Alert",
+  "allOf": [{"$ref": "incident.schema.json"}],
+  "type": "object",
+  "required": [
+    "verifier_model_id",
+    "verifier_model_version",
+    "prompt_version",
+    "reason",
+    "retry_count",
+    "latency_ms"
+  ],
+  "properties": {
+    "verdict": {"enum": ["confirmed", "rejected", "uncertain"]},
+    "verifier_model_id": {"const": "nvidia/cosmos3-nano-reasoner"},
+    "verifier_model_version": {"const": "bf16-final"},
+    "prompt_version": {"const": "1.0.0"},
+    "retry_count": {"type": "integer", "minimum": 0},
+    "latency_ms": {"type": "integer", "minimum": 0},
+    "feedback_label": {"enum": ["confirmed", "rejected", "uncertain"]}
+  }
+}

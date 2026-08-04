@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "roles": {
+    "viewer": ["overview:read", "services:read", "ports:read", "tools:list"],
+    "analyst": ["overview:read", "services:read", "ports:read", "tools:list", "tools:execute"],
+    "operator": ["overview:read", "services:read", "ports:read", "admission:read", "audit:read", "tools:list", "tools:execute", "gpu:control"],
+    "model_engineer": ["overview:read", "services:read", "ports:read", "admission:read", "audit:read", "tools:list", "tools:execute", "gpu:control"],
+    "admin": ["*"]
+  },
+  "anonymous_role": "viewer",
+  "mutating_runtime_tools": "gpu_profile_switch_only",
+  "notes": "GPU profile switching requires explicit confirmation and the allowlisted host worker. Bearer tokens are never stored here; only SHA-256 digests belong in the ignored operator token store."
+}

@@ -1,0 +1,57 @@
+name: ntc-vss-retail-poc-rtcv-file-batch
+
+x-rtcv-image: &rtcv_image
+  nvcr.io/nvidia/vss-core/vss-rt-cv:3.2.1@sha256:1a8b9879686f21cb6b9589d6139b5ac2eb960f1520aa3b4bb5f079d05fee9458
+
+services:
+  rtcv-file-batch:
+    image: *rtcv_image
+    container_name: ntc-vss-phase15-rtcv-file-batch
+    entrypoint: ["python3", "/opt/ntc/rtcv-file-batch/service.py"]
+    environment:
+      HTTP_PORT: "39620"
+      NVIDIA_PROTO_DIR: /opt/nvidia-protos
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      VLM_TEST_MEDIA_ROOT: /runtime/vlm-test/staging
+      RTCV_CONFIG_SOURCE: /opt/ntc/rtcv-file-batch-config/ds-main-config.txt
+      RTCV_CONFIG_SOURCE_ROOT: /opt/ntc/rtcv-file-batch-config
+      RTCV_CONFIG_TARGET: /opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/configs
+      RTCV_DS_START: /opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/ds-start.sh
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    ports:
+      - "127.0.0.1:39620:39620"
+    volumes:
+      - ../../services/rtcv-file-batch:/opt/ntc/rtcv-file-batch:ro
+      - ../../runtime/phase15/vlm-test:/runtime/vlm-test:ro
+      - ../../config/deepstream:/opt/ntc/rtcv-file-batch-config:ro
+      - ../../runtime/phase15/rtcv-file-batch/config:/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/configs
+      - ../../third_party/video-search-and-summarization/deploy/docker/services/rtvi/rtvi-cv/ds-start.sh:/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/ds-start.sh:ro
+      - ../../third_party/video-search-and-summarization/tools/message-broker-consumers:/opt/nvidia-protos:ro
+      - ../../.cache/tensorrt/GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0/rtdetr/fp16:/opt/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:39620/health/ready', timeout=3)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+    networks: [infra]
+    restart: "no"
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

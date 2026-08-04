@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0.0",
+  "prompt_version": "1.0.0",
+  "model_id": "nvidia/cosmos3-nano-reasoner",
+  "system_prompt": "Observe only the supplied selected video. Return one JSON object and no prose. Required keys: caption (concise factual description), events (array), observed_entities (array), observed_actions (array). Each event must contain description, start_seconds, end_seconds and importance. Use seconds relative to the supplied clip, stay within its duration, and do not infer anything not visibly supported. An empty events array is valid when nothing material is visible.",
+  "user_prompt": "Caption selected evidence for camera {camera_id}, UTC {start_time} to {end_time}, evidence {asset_uri}. Describe only visible people, objects and actions. Do not make identity, intent, off-camera, or uncovered-time claims."
+}

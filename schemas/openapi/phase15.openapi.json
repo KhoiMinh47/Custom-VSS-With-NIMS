@@ -1,0 +1,1390 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NTC NVIDIA VSS Retail Unified Workspace",
+    "version": "1.5.0",
+    "description": "Phase 15 NVIDIA VSS UI integration API. The browser uses only this loopback same-origin gateway. Fixed internal adapters expose camera presentation, analytics, alerts, selected media, semantic search, summarization, grounded Q&A and reports without exposing arbitrary upstream URLs. Phase 15 remains PARTIAL; Phase 14 remains LOCKED_BY_USER and Phase 08 remains deferred."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:39510",
+      "description": "Loopback-only unified workspace"
+    }
+  ],
+  "tags": [
+    {"name": "Health"},
+    {"name": "Workspace"},
+    {"name": "Camera"},
+    {"name": "Analytics"},
+    {"name": "Stream Sources"},
+    {"name": "Alerts"},
+    {"name": "Search"},
+    {"name": "Summary"},
+    {"name": "Reports"},
+    {"name": "System"},
+    {"name": "VSS UI Compatibility"}
+  ],
+  "paths": {
+    "/health/live": {
+      "get": {
+        "tags": ["Health"],
+        "operationId": "healthLive",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"}
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["Health"],
+        "operationId": "healthReady",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"}
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "metrics",
+        "responses": {
+          "200": {
+            "description": "Prometheus text exposition",
+            "content": {
+              "text/plain": {"schema": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "openApiDocument",
+        "responses": {
+          "200": {
+            "description": "This OpenAPI document",
+            "content": {
+              "application/json": {"schema": {"type": "object"}}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/session": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "session",
+        "responses": {
+          "200": {
+            "description": "Current identity and role",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Session"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspace": {
+      "get": {
+        "tags": ["Workspace"],
+        "operationId": "workspaceBootstrap",
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "schema": {"type": "boolean", "default": false}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partial-failure-tolerant workspace bootstrap and system snapshot",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/WorkspaceEnvelope"}
+              }
+            }
+          },
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/cameras": {
+      "get": {
+        "tags": ["Camera"],
+        "operationId": "workspaceCameras",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/cameras/{camera_id}/state": {
+      "get": {
+        "tags": ["Camera"],
+        "operationId": "workspaceCameraState",
+        "parameters": [{"$ref": "#/components/parameters/CameraId"}],
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/stream-sources": {
+      "get": {
+        "tags": ["Stream Sources"],
+        "operationId": "workspaceStreamSources",
+        "description": "Credential-free VIOS stream inventory; source URLs and credentials are never returned.",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      },
+      "post": {
+        "tags": ["Stream Sources"],
+        "operationId": "workspaceAddStreamSource",
+        "description": "Registers one RTSP source in VIOS. The gateway does not persist or return the submitted URL.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["name", "url"], "properties": {"schema_version": {"type": "string"}, "store_id": {"type": "string"}, "name": {"type": "string", "maxLength": 80}, "url": {"type": "string", "format": "uri", "pattern": "^rtsp://"}, "idempotency_key": {"type": "string"}}}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/stream-sources/{source_id}": {
+      "delete": {
+        "tags": ["Stream Sources"],
+        "operationId": "workspaceDeleteStreamSource",
+        "parameters": [{"name": "source_id", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,100}$"}}],
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/cameras/{camera_id}/live.mjpeg": {
+      "get": {
+        "tags": ["Camera"],
+        "operationId": "workspaceCameraLive",
+        "description": "Same-origin MJPEG presentation stream. Currently capability-allowlisted only for cam-01. The video plane remains independent from AI admission.",
+        "parameters": [{"$ref": "#/components/parameters/CameraId"}],
+        "responses": {
+          "200": {
+            "description": "MJPEG stream",
+            "content": {
+              "multipart/x-mixed-replace": {
+                "schema": {"type": "string", "contentEncoding": "binary"}
+              }
+            }
+          },
+          "409": {"$ref": "#/components/responses/WorkspaceError"},
+          "503": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/cameras/{camera_id}/thumbnail.jpg": {
+      "get": {
+        "tags": ["Camera"],
+        "operationId": "workspaceCameraThumbnail",
+        "parameters": [
+          {"$ref": "#/components/parameters/CameraId"},
+          {
+            "name": "at",
+            "in": "query",
+            "description": "Optional UTC instant",
+            "schema": {"$ref": "#/components/schemas/UtcTimestamp"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validated JPEG thumbnail",
+            "content": {
+              "image/jpeg": {
+                "schema": {"type": "string", "contentEncoding": "binary"}
+              }
+            }
+          },
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "503": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/analytics/state": {
+      "get": {
+        "tags": ["Analytics"],
+        "operationId": "workspaceAnalyticsState",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/analytics/events": {
+      "get": {
+        "tags": ["Analytics"],
+        "operationId": "workspaceAnalyticsEvents",
+        "parameters": [
+          {
+            "name": "include_evaluation",
+            "in": "query",
+            "schema": {"type": "boolean", "default": false}
+          }
+        ],
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/analytics/config": {
+      "get": {
+        "tags": ["Analytics"],
+        "operationId": "workspaceAnalyticsConfig",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      },
+      "put": {
+        "tags": ["Analytics"],
+        "operationId": "updateWorkspaceAnalyticsConfig",
+        "description": "Updates only the existing queue thresholds with an incremented config_version. Connection, secret, RTSP and arbitrary URL fields are rejected.",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/AnalyticsConfig"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "409": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/incidents/state": {
+      "get": {
+        "tags": ["Alerts"],
+        "operationId": "workspaceIncidentState",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/alerts": {
+      "get": {
+        "tags": ["Alerts"],
+        "operationId": "workspaceAlerts",
+        "parameters": [
+          {"name": "source", "in": "query", "schema": {"type": "string", "enum": ["all", "hybrid", "direct"], "default": "all"}},
+          {"name": "camera_id", "in": "query", "schema": {"$ref": "#/components/schemas/CameraId"}},
+          {"name": "verdict", "in": "query", "schema": {"type": "string", "enum": ["confirmed", "rejected", "uncertain"]}},
+          {"name": "alert_type", "in": "query", "schema": {"type": "string", "maxLength": 160}},
+          {"name": "from", "in": "query", "schema": {"$ref": "#/components/schemas/UtcTimestamp"}},
+          {"name": "to", "in": "query", "schema": {"$ref": "#/components/schemas/UtcTimestamp"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 200, "default": 100}},
+          {"name": "offset", "in": "query", "schema": {"type": "integer", "minimum": 0, "maximum": 1000, "default": 0}},
+          {"name": "deleted", "in": "query", "schema": {"type": "string", "enum": ["exclude", "include", "only"], "default": "exclude"}}
+        ],
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/alerts/{source}/{alert_id}": {
+      "delete": {
+        "tags": ["Alerts"],
+        "operationId": "workspaceAlertSoftDelete",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "source", "in": "path", "required": true, "schema": {"type": "string", "enum": ["hybrid", "direct"]}},
+          {"name": "alert_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}
+        ],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TombstoneRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "409": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/alerts/{source}/{alert_id}/restore": {
+      "post": {
+        "tags": ["Alerts"],
+        "operationId": "workspaceAlertRestore",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "source", "in": "path", "required": true, "schema": {"type": "string", "enum": ["hybrid", "direct"]}},
+          {"name": "alert_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}
+        ],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TombstoneRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/alerts/{source}/{alert_id}/feedback": {
+      "post": {
+        "tags": ["Alerts"],
+        "operationId": "workspaceAlertFeedback",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "source", "in": "path", "required": true, "schema": {"type": "string", "enum": ["hybrid", "direct"]}},
+          {"name": "alert_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/AlertFeedbackRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/media/{media_id}.mp4": {
+      "get": {
+        "tags": ["Workspace"],
+        "operationId": "workspaceSelectedMedia",
+        "description": "Exact-ID selected-media endpoint. IDs must first be observed in an allowlisted workflow response. A single byte range is supported.",
+        "parameters": [
+          {"name": "media_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}},
+          {"name": "Range", "in": "header", "required": false, "schema": {"type": "string", "pattern": "^bytes=(?:[0-9]+-[0-9]*|-[0-9]+)$"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete MP4 evidence",
+            "headers": {
+              "Accept-Ranges": {"schema": {"type": "string", "const": "bytes"}}
+            },
+            "content": {
+              "video/mp4": {"schema": {"type": "string", "contentEncoding": "binary"}}
+            }
+          },
+          "206": {
+            "description": "Single partial byte range",
+            "headers": {
+              "Accept-Ranges": {"schema": {"type": "string", "const": "bytes"}},
+              "Content-Range": {"schema": {"type": "string"}}
+            },
+            "content": {
+              "video/mp4": {"schema": {"type": "string", "contentEncoding": "binary"}}
+            }
+          },
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "416": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/search/state": {
+      "get": {
+        "tags": ["Search"],
+        "operationId": "workspaceSearchState",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/search": {
+      "post": {
+        "tags": ["Search"],
+        "operationId": "workspaceSearch",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/SearchRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "409": {"$ref": "#/components/responses/WorkspaceError"},
+          "503": {"$ref": "#/components/responses/WorkspaceError"},
+          "504": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/assistant/evidence": {
+      "post": {
+        "tags": ["Assistant", "Summary"],
+        "operationId": "workspaceEvidenceAssistant",
+        "description": "Evidence-first routing for one exact clip, alert or summary. Resolves allowlisted selected media, reuses an exact completed summary or creates a persisted selected-clip job. This operation never invokes semantic search and never switches a GPU profile.",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/EvidenceAssistantRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "201": {"$ref": "#/components/responses/JsonSuccess"},
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "409": {"$ref": "#/components/responses/WorkspaceError"},
+          "503": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/summaries/state": {
+      "get": {
+        "tags": ["Summary"],
+        "operationId": "workspaceSummaryState",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/summaries/jobs": {
+      "get": {
+        "tags": ["Summary"],
+        "operationId": "workspaceSummaryJobs",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      },
+      "post": {
+        "tags": ["Summary"],
+        "operationId": "createWorkspaceSummaryJob",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/SummaryJobRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "201": {"$ref": "#/components/responses/JsonSuccess"},
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/summaries/jobs/{job_id}": {
+      "get": {
+        "tags": ["Summary"],
+        "operationId": "workspaceSummaryJob",
+        "parameters": [{"$ref": "#/components/parameters/JobId"}],
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/summaries/jobs/{job_id}/actions/{action}": {
+      "post": {
+        "tags": ["Summary"],
+        "operationId": "workspaceSummaryAction",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"$ref": "#/components/parameters/JobId"},
+          {"name": "action", "in": "path", "required": true, "schema": {"type": "string", "enum": ["caption", "summarize", "retry"]}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"type": "object", "maxProperties": 0}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/summaries/qa": {
+      "post": {
+        "tags": ["Summary"],
+        "operationId": "workspaceSummaryQa",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/SummaryQaRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "503": {"$ref": "#/components/responses/WorkspaceError"},
+          "504": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/reports": {
+      "get": {
+        "tags": ["Reports"],
+        "operationId": "workspaceReports",
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/reports/{report_target}": {
+      "get": {
+        "tags": ["Reports"],
+        "operationId": "downloadWorkspaceReport",
+        "parameters": [
+          {
+            "name": "report_target",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string", "pattern": "^[0-9a-f]{64}\\.(?:json|md)$"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exact report download",
+            "headers": {
+              "Content-Disposition": {"schema": {"type": "string"}}
+            },
+            "content": {
+              "application/json": {"schema": {"type": "string", "contentEncoding": "binary"}},
+              "text/markdown": {"schema": {"type": "string"}}
+            }
+          },
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      },
+      "post": {
+        "tags": ["Reports"],
+        "operationId": "createWorkspaceReport",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "report_target",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string", "enum": ["incident", "shift", "daily"]}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/ReportRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/JsonSuccess"},
+          "201": {"$ref": "#/components/responses/JsonSuccess"},
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/reports/{report_id}/media/{media_id}.mp4": {
+      "get": {
+        "tags": ["Reports"],
+        "operationId": "workspaceReportEvidenceMedia",
+        "description": "Plays an exact selected-media asset only when it belongs to the exact report and store.",
+        "parameters": [
+          {"name": "report_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}},
+          {"name": "media_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}},
+          {"name": "Range", "in": "header", "required": false, "schema": {"type": "string", "pattern": "^bytes=(?:[0-9]+-[0-9]*|-[0-9]+)$"}}
+        ],
+        "responses": {
+          "200": {"description": "Complete report evidence MP4", "content": {"video/mp4": {"schema": {"type": "string", "contentEncoding": "binary"}}}},
+          "206": {"description": "Partial report evidence MP4", "content": {"video/mp4": {"schema": {"type": "string", "contentEncoding": "binary"}}}},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/WorkspaceError"},
+          "416": {"$ref": "#/components/responses/WorkspaceError"},
+          "default": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/workspace/uploads": {
+      "get": {
+        "tags": ["Summary"],
+        "operationId": "workspaceUploadedAssets",
+        "parameters": [{"name": "deleted", "in": "query", "schema": {"type": "string", "enum": ["exclude", "include", "only"], "default": "exclude"}}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "default": {"$ref": "#/components/responses/WorkspaceError"}}
+      },
+      "post": {
+        "tags": ["Summary"],
+        "operationId": "workspaceUploadMedia",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "X-File-Name", "in": "header", "required": true, "schema": {"type": "string", "maxLength": 200}},
+          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"$ref": "#/components/schemas/IdempotencyKey"}}
+        ],
+        "requestBody": {"required": true, "content": {"video/mp4": {"schema": {"type": "string", "contentEncoding": "binary", "maxLength": 67108864}}, "video/x-matroska": {"schema": {"type": "string", "contentEncoding": "binary", "maxLength": 67108864}}}},
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "201": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "403": {"$ref": "#/components/responses/Forbidden"}, "default": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/uploads/{asset_id}": {
+      "delete": {
+        "tags": ["Summary"],
+        "operationId": "workspaceUploadedAssetDelete",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "asset_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TombstoneRequest"}}}},
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}, "404": {"$ref": "#/components/responses/WorkspaceError"}, "409": {"$ref": "#/components/responses/WorkspaceError"}, "default": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/uploads/{asset_id}/restore": {
+      "post": {
+        "tags": ["Summary"],
+        "operationId": "workspaceUploadedAssetRestore",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "asset_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TombstoneRequest"}}}},
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}, "404": {"$ref": "#/components/responses/WorkspaceError"}, "default": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/uploads/{asset_id}/media": {
+      "get": {
+        "tags": ["Summary"],
+        "operationId": "workspaceUploadedAssetMedia",
+        "parameters": [{"name": "asset_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}],
+        "responses": {"200": {"description": "Prepared uploaded MP4", "content": {"video/mp4": {"schema": {"type": "string", "contentEncoding": "binary"}}}}, "206": {"description": "Partial prepared uploaded MP4", "content": {"video/mp4": {"schema": {"type": "string", "contentEncoding": "binary"}}}}, "404": {"$ref": "#/components/responses/WorkspaceError"}, "416": {"$ref": "#/components/responses/WorkspaceError"}, "default": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/state": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestState",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestJobs",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs/{job_id}": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestJob",
+        "parameters": [{"$ref": "#/components/parameters/JobId"}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "404": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs/{job_id}/media": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestStagingMedia",
+        "parameters": [{"$ref": "#/components/parameters/JobId"}, {"name": "Range", "in": "header", "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Staging media preview; this is not Store media"}, "206": {"description": "Partial staging media"}, "404": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/uploads": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestUploadStage",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "X-File-Name", "in": "header", "required": true, "schema": {"type": "string", "maxLength": 200}}, {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"$ref": "#/components/schemas/IdempotencyKey"}}],
+        "requestBody": {"required": true, "content": {"video/mp4": {"schema": {"type": "string", "contentEncoding": "binary", "maxLength": 67108864}}, "video/x-matroska": {"schema": {"type": "string", "contentEncoding": "binary", "maxLength": 67108864}}}},
+        "responses": {"201": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "403": {"$ref": "#/components/responses/Forbidden"}, "409": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs/{job_id}/candidate": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestAttachFileCandidate",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/JobId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RtCvCandidate"}}}},
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs/{job_id}/launch": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestLaunch",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/JobId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false}}}},
+        "responses": {"202": {"$ref": "#/components/responses/JsonSuccess"}, "409": {"$ref": "#/components/responses/WorkspaceError", "description": "RT-CV file batch adapter or candidate is unavailable"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs/{job_id}/rtcv-start": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestStartRtcvWorkflow",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/JobId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false}}}},
+        "responses": {"202": {"$ref": "#/components/responses/JsonSuccess"}, "409": {"$ref": "#/components/responses/WorkspaceError"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/jobs/{job_id}/save": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestSaveAfterVlm",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/JobId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false}}}},
+        "responses": {"201": {"$ref": "#/components/responses/JsonSuccess"}, "409": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/realtime/candidates": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestRealtimeCandidates",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/realtime/{incident_id}/launch": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestRealtimeLaunch",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "incident_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false}}}},
+        "responses": {"202": {"$ref": "#/components/responses/JsonSuccess"}, "409": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/store": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestStore",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/store/{asset_id}/media": {
+      "get": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestStoreMedia",
+        "parameters": [{"name": "asset_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}, {"name": "Range", "in": "header", "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Media saved after VLM"}, "206": {"description": "Partial media saved after VLM"}, "404": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/workspace/vlm-tests/store/{asset_id}/launch": {
+      "post": {
+        "tags": ["VLM Test"],
+        "operationId": "vlmTestStoreLaunch",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "asset_id", "in": "path", "required": true, "schema": {"$ref": "#/components/schemas/HexId"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false}}}},
+        "responses": {"202": {"$ref": "#/components/responses/JsonSuccess"}, "404": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/api/v1/overview": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "overview",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/services": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "services",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/ports": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "ports",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/admission": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "admission",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/gpu-control": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "gpuControl",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/gpu-control/models": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "gpuModelControls",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/gpu-control/models/{model_id}": {
+      "post": {
+        "tags": ["System"],
+        "operationId": "setGpuModelPower",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "model_id", "in": "path", "required": true, "schema": {"type": "string", "enum": ["llm", "vlm"]}}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["enabled", "confirmed"],
+                "properties": {
+                  "enabled": {"type": "boolean"},
+                  "confirmed": {"const": true}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "409": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/gpu-control/commands": {
+      "post": {
+        "tags": ["System"],
+        "operationId": "queueGpuProfileSwitch",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/GpuCommand"}
+            }
+          }
+        },
+        "responses": {
+          "202": {"$ref": "#/components/responses/JsonSuccess"},
+          "400": {"$ref": "#/components/responses/WorkspaceError"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "409": {"$ref": "#/components/responses/WorkspaceError"}
+        }
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "audit",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 100}}
+        ],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/tools": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "tools",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/tools/execute": {
+      "post": {
+        "tags": ["System"],
+        "operationId": "executeTool",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {"type": "string", "maxLength": 120},
+                  "arguments": {"type": "object"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/v1/agent/query": {
+      "post": {
+        "tags": ["System"],
+        "operationId": "agentQuery",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["question"],
+                "additionalProperties": false,
+                "properties": {
+                  "question": {"type": "string", "minLength": 1, "maxLength": 2000}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiChat",
+        "description": "Safe local assistant adapter. Browser-supplied completion URLs are ignored and no GPU profile is started automatically.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {"200": {"description": "Plain-text streamed-compatible answer", "content": {"text/plain": {"schema": {"type": "string"}}}}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "403": {"$ref": "#/components/responses/Forbidden"}}
+      }
+    },
+    "/compat/agent/api/v1/search": {
+      "post": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiSearch",
+        "description": "Transforms the NVIDIA Search screen contract into the versioned workspace semantic-search contract.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/compat/mdx/incidents": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiIncidents",
+        "description": "Transforms existing versioned alert records for the NVIDIA Alerts screen.",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/compat/vst/api/v1/sensor/list": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiSensorList",
+        "description": "Credential-free stable camera and VST sensor identity inventory.",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}}
+      }
+    },
+    "/compat/vst/api/v1/replay/streams": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiReplayStreams",
+        "description": "Credential-free reference inventory for Video Management cards.",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}}
+      }
+    },
+    "/compat/vst/api/v1/storage/size": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiStorageTimeline",
+        "description": "Bounded VST timeline inventory used only for media selection and presentation.",
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}}
+      }
+    },
+    "/compat/vst/api/v1/replay/stream/{stream_id}/picture": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiReplayPicture",
+        "parameters": [{"name": "stream_id", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,100}$"}}, {"name": "startTime", "in": "query", "schema": {"$ref": "#/components/schemas/UtcTimestamp"}}],
+        "responses": {"200": {"description": "Selected JPEG frame", "content": {"image/jpeg": {"schema": {"type": "string", "contentEncoding": "binary"}}}}, "404": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/compat/vst/api/v1/storage/file/{stream_id}/url": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiSelectVideo",
+        "description": "Selects a bounded VST clip and returns a sanitized same-origin presentation URL.",
+        "parameters": [{"name": "stream_id", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,100}$"}}, {"name": "startTime", "in": "query", "required": true, "schema": {"$ref": "#/components/schemas/UtcTimestamp"}}, {"name": "endTime", "in": "query", "required": true, "schema": {"$ref": "#/components/schemas/UtcTimestamp"}}],
+        "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/compat/vst/storage/temp_files/{filename}": {
+      "get": {
+        "tags": ["VSS UI Compatibility"],
+        "operationId": "vssUiSelectedVideo",
+        "description": "Presents only a VST-generated allowlisted MP4 filename and supports a single byte range.",
+        "parameters": [{"name": "filename", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,239}\\.mp4$"}}],
+        "responses": {"200": {"description": "Selected MP4"}, "206": {"description": "Selected MP4 byte range"}, "416": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {"type": "http", "scheme": "bearer"}
+    },
+    "parameters": {
+      "CameraId": {
+        "name": "camera_id",
+        "in": "path",
+        "required": true,
+        "schema": {"$ref": "#/components/schemas/CameraId"}
+      },
+      "JobId": {
+        "name": "job_id",
+        "in": "path",
+        "required": true,
+        "schema": {"$ref": "#/components/schemas/HexId"}
+      }
+    },
+    "responses": {
+      "JsonSuccess": {
+        "description": "Successful JSON response",
+        "content": {
+          "application/json": {"schema": {"type": "object"}}
+        }
+      },
+      "Forbidden": {
+        "description": "The current role lacks the required permission",
+        "content": {
+          "application/json": {"schema": {"$ref": "#/components/schemas/BasicError"}}
+        }
+      },
+      "WorkspaceError": {
+        "description": "Normalized BFF or validation error",
+        "content": {
+          "application/json": {"schema": {"$ref": "#/components/schemas/WorkspaceError"}}
+        }
+      }
+    },
+    "schemas": {
+      "CameraId": {
+        "type": "string",
+        "pattern": "^cam-[0-9]{2}$"
+      },
+      "HexId": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "UtcTimestamp": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "Z$"
+      },
+      "IdempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "pattern": "^[A-Za-z0-9_.:-]+$"
+      },
+      "Session": {
+        "type": "object",
+        "required": ["subject", "role", "authenticated"],
+        "properties": {
+          "subject": {"type": "string"},
+          "role": {"type": "string"},
+          "authenticated": {"type": "boolean"}
+        }
+      },
+      "BasicError": {
+        "type": "object",
+        "required": ["status", "request_id"],
+        "properties": {
+          "status": {"type": "string"},
+          "request_id": {"type": "string"}
+        }
+      },
+      "WorkspaceError": {
+        "type": "object",
+        "required": ["schema_version", "status", "code", "service_id", "retryable", "message", "request_id"],
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "status": {"type": "string", "const": "error"},
+          "code": {"type": "string"},
+          "service_id": {"type": "string"},
+          "retryable": {"type": "boolean"},
+          "message": {"type": "string", "maxLength": 240},
+          "request_id": {"type": "string"}
+        }
+      },
+      "WorkspaceEnvelope": {
+        "type": "object",
+        "required": ["schema_version", "store_id", "generated_at", "phase", "phase_status", "components", "capabilities", "system"],
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "generated_at": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "phase": {"type": "string", "const": "PHASE-15"},
+          "phase_status": {"type": "string", "const": "PARTIAL"},
+          "components": {"type": "object"},
+          "capabilities": {"type": "object"},
+          "system": {"type": "object"}
+        }
+      },
+      "AnalyticsConfig": {
+        "type": "object",
+        "required": ["schema_version", "store_id", "camera_id", "config_version", "queue"],
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "camera_id": {"type": "string", "const": "cam-01"},
+          "config_version": {"type": "integer", "minimum": 1},
+          "queue": {
+            "type": "object",
+            "required": ["length_threshold", "wait_threshold_seconds"],
+            "properties": {
+              "length_threshold": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "wait_threshold_seconds": {"type": "number", "minimum": 1, "maximum": 86400}
+            }
+          }
+        }
+      },
+      "AlertFeedbackRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "alert_id": {"$ref": "#/components/schemas/HexId"},
+          "feedback_label": {"type": "string", "enum": ["confirmed", "rejected", "uncertain"]},
+          "label": {"type": "string", "enum": ["confirmed", "rejected", "uncertain"]},
+          "note": {"type": "string", "maxLength": 1000},
+          "idempotency_key": {"$ref": "#/components/schemas/IdempotencyKey"}
+        },
+        "anyOf": [
+          {"required": ["feedback_label"]},
+          {"required": ["label"]}
+        ]
+      },
+      "SearchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "query": {"type": "string", "minLength": 1, "maxLength": 2000},
+          "mode": {"type": "string", "enum": ["manual", "agent"], "default": "manual"},
+          "route": {"type": "string", "enum": ["auto", "action", "attribute", "fusion", "image"], "default": "auto"},
+          "camera_ids": {
+            "type": "array",
+            "maxItems": 10,
+            "uniqueItems": true,
+            "items": {"$ref": "#/components/schemas/CameraId"}
+          },
+          "from": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "from_utc": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "to": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "to_utc": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "top_k": {"type": "integer", "minimum": 1, "maximum": 50, "default": 5},
+          "similarity_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+          "threshold": {"type": "number", "minimum": 0, "maximum": 1},
+          "critic_verification": {"type": "boolean"},
+          "critic_top_k": {"type": "integer", "minimum": 0, "maximum": 3},
+          "source_type": {"type": "string", "enum": ["all", "selected_clip"], "default": "all"},
+          "asset_uri": {"type": "string", "pattern": "^selected-snapshot://[A-Za-z0-9][A-Za-z0-9._-]{0,199}\\.(?:jpg|jpeg|png)$"},
+          "bbox": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "image_width": {"type": "integer", "minimum": 1, "maximum": 16384},
+          "image_height": {"type": "integer", "minimum": 1, "maximum": 16384}
+        }
+      },
+      "EvidenceAssistantContext": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"type": "string", "enum": ["clip", "alert", "search_result", "summary"]},
+          "asset_id": {"$ref": "#/components/schemas/HexId"},
+          "alert_id": {"$ref": "#/components/schemas/HexId"},
+          "alert_source": {"type": "string", "enum": ["hybrid", "direct"]},
+          "summary_id": {"$ref": "#/components/schemas/HexId"},
+          "camera_id": {"$ref": "#/components/schemas/CameraId"},
+          "start_time": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "end_time": {"$ref": "#/components/schemas/UtcTimestamp"}
+        }
+      },
+      "EvidenceAssistantRequest": {
+        "type": "object",
+        "required": ["question", "context"],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "question": {"type": "string", "minLength": 1, "maxLength": 4000},
+          "context": {"$ref": "#/components/schemas/EvidenceAssistantContext"},
+          "idempotency_key": {"$ref": "#/components/schemas/IdempotencyKey"}
+        }
+      },
+      "TombstoneRequest": {
+        "type": "object",
+        "required": ["schema_version", "store_id", "idempotency_key"],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "idempotency_key": {"$ref": "#/components/schemas/IdempotencyKey"}
+        }
+      },
+      "SelectedAsset": {
+        "type": "object",
+        "required": ["asset_uri", "start_time", "end_time"],
+        "additionalProperties": false,
+        "properties": {
+          "asset_uri": {"type": "string", "pattern": "^(?:selected-clip|uploaded-media)://[0-9a-f]{64}\\.mp4$"},
+          "asset_sha256": {"$ref": "#/components/schemas/HexId"},
+          "start_time": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "end_time": {"$ref": "#/components/schemas/UtcTimestamp"}
+        }
+      },
+      "SummaryJobRequest": {
+        "type": "object",
+        "required": ["camera_id", "source_type", "window_start", "window_end", "assets"],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "camera_id": {"$ref": "#/components/schemas/CameraId"},
+          "source_type": {"type": "string", "enum": ["selected_video", "time_window"]},
+          "window_start": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "window_end": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "assets": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {"$ref": "#/components/schemas/SelectedAsset"}
+          },
+          "idempotency_key": {"$ref": "#/components/schemas/IdempotencyKey"},
+          "title": {"type": "string", "maxLength": 200},
+          "priority": {"type": "integer", "minimum": 0, "maximum": 100}
+        }
+      },
+      "SummaryQaRequest": {
+        "type": "object",
+        "required": ["summary_id", "question"],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "summary_id": {"$ref": "#/components/schemas/HexId"},
+          "question": {"type": "string", "minLength": 1, "maxLength": 4000},
+          "idempotency_key": {"$ref": "#/components/schemas/IdempotencyKey"}
+        }
+      },
+      "ReportRequest": {
+        "type": "object",
+        "required": ["summary_ids"],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "summary_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {"$ref": "#/components/schemas/HexId"}
+          },
+          "incident_id": {"$ref": "#/components/schemas/HexId"},
+          "idempotency_key": {"$ref": "#/components/schemas/IdempotencyKey"}
+        }
+      },
+      "RtCvCandidate": {
+        "type": "object",
+        "required": ["schema_version", "store_id", "camera_id", "event_id", "event_type", "model_id", "model_version", "start_time", "end_time", "candidate"],
+        "additionalProperties": true,
+        "properties": {
+          "schema_version": {"type": "string", "const": "1.0.0"},
+          "store_id": {"type": "string", "const": "store-001"},
+          "camera_id": {"$ref": "#/components/schemas/CameraId"},
+          "event_id": {"$ref": "#/components/schemas/HexId"},
+          "event_type": {"type": "string", "minLength": 1, "maxLength": 160},
+          "model_id": {"type": "string", "minLength": 1, "maxLength": 200},
+          "model_version": {"type": "string", "minLength": 1, "maxLength": 80},
+          "start_time": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "end_time": {"$ref": "#/components/schemas/UtcTimestamp"},
+          "candidate": {"type": "boolean", "const": true},
+          "evaluation": {"type": "boolean", "const": false}
+        }
+      },
+      "GpuCommand": {
+        "type": "object",
+        "required": ["target_profile", "confirmed"],
+        "additionalProperties": false,
+        "dependentRequired": {"managed_job_id": ["auto_restore"], "auto_restore": ["managed_job_id"]},
+        "properties": {
+          "target_profile": {
+            "type": "string",
+            "enum": ["realtime", "alert_verification", "direct_alerts", "video_index", "object_index", "search_assistant", "search_critic", "summary_caption", "summary_reasoning"]
+          },
+          "confirmed": {"type": "boolean", "const": true},
+          "managed_job_id": {
+            "$ref": "#/components/schemas/HexId",
+            "description": "Optional exact Phase 13 job that owns this GPU window. When supplied, the host worker restores realtime after the stage checkpoint."
+          },
+          "auto_restore": {
+            "type": "boolean",
+            "const": true,
+            "description": "Required with managed_job_id; never enables a profile without confirmation."
+          }
+        }
+      }
+    }
+  }
+}

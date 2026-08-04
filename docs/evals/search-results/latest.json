@@ -1,0 +1,582 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_run_id": "phase12-20260729T100802Z",
+  "evaluated_at": "2026-07-29T10:08:02.070326Z",
+  "query_count": 4,
+  "mean_precision_at_k": 0.3833333333333333,
+  "mean_ndcg_at_k": 0.9077324383928644,
+  "label_limit": "Phase 09 event labels are provisional and the snapshot set is small; metrics prove the evaluation path, not production search accuracy.",
+  "results": [
+    {
+      "query": {
+        "query_id": "phase12-action-restricted-entry",
+        "query": "person entering a restricted area",
+        "route": "action",
+        "top_k": 3,
+        "relevance_field": "asset_id",
+        "relevant_ids": [
+          "ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b",
+          "a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745"
+        ],
+        "label_source": "phase09_event_type_provisional"
+      },
+      "search": {
+        "schema_version": "1.0.0",
+        "store_id": "store-001",
+        "query": "person entering a restricted area",
+        "route": "action",
+        "decomposition": {
+          "route": "fusion",
+          "action_query": "person entering a restricted area",
+          "attribute_query": "person entering a restricted area",
+          "camera_ids": [],
+          "source": "deterministic_fallback"
+        },
+        "provider_sources": {
+          "action": "cache"
+        },
+        "critic_status": "unavailable",
+        "result_count": 3,
+        "results": [
+          {
+            "@timestamp": "2026-07-29T09:22:24.647000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "restricted_zone.entry",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "8086afb4b953d2fa34192daef86f2a71b57c3f589e802e851e151d000a9472aa",
+            "asset_id": "ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b",
+            "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:22:24.647000Z",
+            "end_time": "2026-07-29T09:22:34.487000Z",
+            "frame_count": 8,
+            "clip_sha256": "8250ddf16191bba3e313c8f2950242c0ae32289d5b32b5f6ec65c3536204c697",
+            "model_dimension": 768,
+            "latency_ms": 156,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "8086afb4b953d2fa34192daef86f2a71b57c3f589e802e851e151d000a9472aa",
+            "score": 0.54722786,
+            "search_channel": "action"
+          },
+          {
+            "@timestamp": "2026-07-29T09:09:51.847000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "restricted_zone.entry",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "14793ac83017a5589e99f6919c74152f0e68ca346b9300213cfd3018448e4588",
+            "asset_id": "a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745",
+            "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:09:51.847000Z",
+            "end_time": "2026-07-29T09:10:00.887000Z",
+            "frame_count": 8,
+            "clip_sha256": "630fb4c2e56602c99399786d6f7bc69135e8f97f6683a06901e1deaeb9e6fe5d",
+            "model_dimension": 768,
+            "latency_ms": 560,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "14793ac83017a5589e99f6919c74152f0e68ca346b9300213cfd3018448e4588",
+            "score": 0.54456043,
+            "search_channel": "action"
+          },
+          {
+            "@timestamp": "2026-07-29T09:09:48.647000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "queue.threshold",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "40c20a0debc9df2d751e33633b98ff42b351de4dfa41712080c5148a91382252",
+            "asset_id": "a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370",
+            "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:09:48.647000Z",
+            "end_time": "2026-07-29T09:09:58.480000Z",
+            "frame_count": 8,
+            "clip_sha256": "aa24e322bfc6f44bb72f3a6a915da9e96a6c7e37ed5e486c7490ad0bf296cd57",
+            "model_dimension": 768,
+            "latency_ms": 640,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "40c20a0debc9df2d751e33633b98ff42b351de4dfa41712080c5148a91382252",
+            "score": 0.5402181,
+            "search_channel": "action"
+          }
+        ],
+        "searched_at": "2026-07-29T10:08:01.644879Z"
+      },
+      "metrics": {
+        "schema_version": "1.0.0",
+        "query_id": "phase12-action-restricted-entry",
+        "k": 3,
+        "precision_at_k": 0.6666666666666666,
+        "ndcg_at_k": 1.0,
+        "evaluated_at": "2026-07-29T10:08:01.647041Z"
+      }
+    },
+    {
+      "query": {
+        "query_id": "phase12-action-queue",
+        "query": "people waiting in a queue",
+        "route": "action",
+        "top_k": 3,
+        "relevance_field": "asset_id",
+        "relevant_ids": [
+          "a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370"
+        ],
+        "label_source": "phase09_event_type_provisional"
+      },
+      "search": {
+        "schema_version": "1.0.0",
+        "store_id": "store-001",
+        "query": "people waiting in a queue",
+        "route": "action",
+        "decomposition": {
+          "route": "action",
+          "action_query": "people waiting in a queue",
+          "attribute_query": "",
+          "camera_ids": [],
+          "source": "deterministic_fallback"
+        },
+        "provider_sources": {
+          "action": "cache"
+        },
+        "critic_status": "unavailable",
+        "result_count": 3,
+        "results": [
+          {
+            "@timestamp": "2026-07-29T09:22:24.647000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "restricted_zone.entry",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "8086afb4b953d2fa34192daef86f2a71b57c3f589e802e851e151d000a9472aa",
+            "asset_id": "ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b",
+            "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:22:24.647000Z",
+            "end_time": "2026-07-29T09:22:34.487000Z",
+            "frame_count": 8,
+            "clip_sha256": "8250ddf16191bba3e313c8f2950242c0ae32289d5b32b5f6ec65c3536204c697",
+            "model_dimension": 768,
+            "latency_ms": 156,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "8086afb4b953d2fa34192daef86f2a71b57c3f589e802e851e151d000a9472aa",
+            "score": 0.52898216,
+            "search_channel": "action"
+          },
+          {
+            "@timestamp": "2026-07-29T09:09:48.647000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "queue.threshold",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "40c20a0debc9df2d751e33633b98ff42b351de4dfa41712080c5148a91382252",
+            "asset_id": "a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370",
+            "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:09:48.647000Z",
+            "end_time": "2026-07-29T09:09:58.480000Z",
+            "frame_count": 8,
+            "clip_sha256": "aa24e322bfc6f44bb72f3a6a915da9e96a6c7e37ed5e486c7490ad0bf296cd57",
+            "model_dimension": 768,
+            "latency_ms": 640,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "40c20a0debc9df2d751e33633b98ff42b351de4dfa41712080c5148a91382252",
+            "score": 0.52648616,
+            "search_channel": "action"
+          },
+          {
+            "@timestamp": "2026-07-29T09:09:51.847000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "restricted_zone.entry",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "14793ac83017a5589e99f6919c74152f0e68ca346b9300213cfd3018448e4588",
+            "asset_id": "a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745",
+            "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:09:51.847000Z",
+            "end_time": "2026-07-29T09:10:00.887000Z",
+            "frame_count": 8,
+            "clip_sha256": "630fb4c2e56602c99399786d6f7bc69135e8f97f6683a06901e1deaeb9e6fe5d",
+            "model_dimension": 768,
+            "latency_ms": 560,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "14793ac83017a5589e99f6919c74152f0e68ca346b9300213cfd3018448e4588",
+            "score": 0.5240824,
+            "search_channel": "action"
+          }
+        ],
+        "searched_at": "2026-07-29T10:08:01.774204Z"
+      },
+      "metrics": {
+        "schema_version": "1.0.0",
+        "query_id": "phase12-action-queue",
+        "k": 3,
+        "precision_at_k": 0.3333333333333333,
+        "ndcg_at_k": 0.6309297535714575,
+        "evaluated_at": "2026-07-29T10:08:01.775820Z"
+      }
+    },
+    {
+      "query": {
+        "query_id": "phase12-attribute-white-shirt",
+        "query": "person wearing a white shirt",
+        "route": "attribute",
+        "top_k": 3,
+        "relevance_field": "object_id",
+        "relevant_ids": [
+          "person-right-white-shirt"
+        ],
+        "label_source": "manual_snapshot_annotation"
+      },
+      "search": {
+        "schema_version": "1.0.0",
+        "store_id": "store-001",
+        "query": "person wearing a white shirt",
+        "route": "attribute",
+        "decomposition": {
+          "route": "attribute",
+          "action_query": "",
+          "attribute_query": "person wearing a white shirt",
+          "camera_ids": [],
+          "source": "deterministic_fallback"
+        },
+        "provider_sources": {
+          "attribute": "cache"
+        },
+        "critic_status": "unavailable",
+        "result_count": 3,
+        "results": [
+          {
+            "@timestamp": "2026-07-28T09:21:37Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "model_id": "siglip2-so400m-patch16-256",
+            "model_version": "v1.1",
+            "embedding_generation": "b467f55de96f51ce",
+            "object_embedding_id": "9ecf164f0b85487e6cd494168fa4cda50e5c40cd7d372fd630dbef6cb06e72c7",
+            "asset_id": "phase06-cam-01-20260728T092138Z",
+            "asset_uri": "selected-snapshot://phase06-cam-01-20260728T092138Z.jpg",
+            "source_type": "selected_snapshot",
+            "frame_time": "2026-07-28T09:21:37Z",
+            "object_id": "person-right-white-shirt",
+            "track_id": "snapshot-person-3",
+            "object_class": "Person",
+            "bbox": [
+              0.566,
+              0.233,
+              0.11,
+              0.31
+            ],
+            "model_dimension": 1152,
+            "evidence": {
+              "media_plane": "selected_snapshot",
+              "raw_storage_consumed": false
+            },
+            "id": "9ecf164f0b85487e6cd494168fa4cda50e5c40cd7d372fd630dbef6cb06e72c7",
+            "score": 0.77261853,
+            "search_channel": "attribute"
+          },
+          {
+            "@timestamp": "2026-07-28T09:21:37Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "model_id": "siglip2-so400m-patch16-256",
+            "model_version": "v1.1",
+            "embedding_generation": "b467f55de96f51ce",
+            "object_embedding_id": "8911b7e31b6189d5a6cfad19c01488fab7d1759236c1bb9e1cb30b349d8a4818",
+            "asset_id": "phase06-cam-01-20260728T092138Z",
+            "asset_uri": "selected-snapshot://phase06-cam-01-20260728T092138Z.jpg",
+            "source_type": "selected_snapshot",
+            "frame_time": "2026-07-28T09:21:37Z",
+            "object_id": "person-center-tan-shirt",
+            "track_id": "snapshot-person-2",
+            "object_class": "Person",
+            "bbox": [
+              0.51,
+              0.19,
+              0.11,
+              0.31
+            ],
+            "model_dimension": 1152,
+            "evidence": {
+              "media_plane": "selected_snapshot",
+              "raw_storage_consumed": false
+            },
+            "id": "8911b7e31b6189d5a6cfad19c01488fab7d1759236c1bb9e1cb30b349d8a4818",
+            "score": 0.6644063,
+            "search_channel": "attribute"
+          },
+          {
+            "@timestamp": "2026-07-28T09:21:37Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "model_id": "siglip2-so400m-patch16-256",
+            "model_version": "v1.1",
+            "embedding_generation": "b467f55de96f51ce",
+            "object_embedding_id": "800b91a9df916b0988d322cb76893ff4cb896dba71e48fb0069b5250d45c4e97",
+            "asset_id": "phase06-cam-01-20260728T092138Z",
+            "asset_uri": "selected-snapshot://phase06-cam-01-20260728T092138Z.jpg",
+            "source_type": "selected_snapshot",
+            "frame_time": "2026-07-28T09:21:37Z",
+            "object_id": "person-left-door",
+            "track_id": "snapshot-person-1",
+            "object_class": "Person",
+            "bbox": [
+              0.0,
+              0.125,
+              0.13,
+              0.79
+            ],
+            "model_dimension": 1152,
+            "evidence": {
+              "media_plane": "selected_snapshot",
+              "raw_storage_consumed": false
+            },
+            "id": "800b91a9df916b0988d322cb76893ff4cb896dba71e48fb0069b5250d45c4e97",
+            "score": 0.5994384,
+            "search_channel": "attribute"
+          }
+        ],
+        "searched_at": "2026-07-29T10:08:01.902935Z"
+      },
+      "metrics": {
+        "schema_version": "1.0.0",
+        "query_id": "phase12-attribute-white-shirt",
+        "k": 3,
+        "precision_at_k": 0.3333333333333333,
+        "ndcg_at_k": 1.0,
+        "evaluated_at": "2026-07-29T10:08:01.904699Z"
+      }
+    },
+    {
+      "query": {
+        "query_id": "phase12-fusion-person-working",
+        "query": "person sitting at a desk wearing a white shirt",
+        "route": "fusion",
+        "top_k": 5,
+        "relevance_field": "asset_id",
+        "relevant_ids": [
+          "phase06-cam-01-20260728T092138Z"
+        ],
+        "label_source": "manual_snapshot_annotation"
+      },
+      "search": {
+        "schema_version": "1.0.0",
+        "store_id": "store-001",
+        "query": "person sitting at a desk wearing a white shirt",
+        "route": "fusion",
+        "decomposition": {
+          "route": "attribute",
+          "action_query": "",
+          "attribute_query": "person sitting at a desk wearing a white shirt",
+          "camera_ids": [],
+          "source": "deterministic_fallback"
+        },
+        "provider_sources": {
+          "action": "cache",
+          "attribute": "cache"
+        },
+        "critic_status": "unavailable",
+        "result_count": 4,
+        "results": [
+          {
+            "@timestamp": "2026-07-28T09:21:37Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "model_id": "siglip2-so400m-patch16-256",
+            "model_version": "v1.1",
+            "embedding_generation": "b467f55de96f51ce",
+            "object_embedding_id": "9ecf164f0b85487e6cd494168fa4cda50e5c40cd7d372fd630dbef6cb06e72c7",
+            "asset_id": "phase06-cam-01-20260728T092138Z",
+            "asset_uri": "selected-snapshot://phase06-cam-01-20260728T092138Z.jpg",
+            "source_type": "selected_snapshot",
+            "frame_time": "2026-07-28T09:21:37Z",
+            "object_id": "person-right-white-shirt",
+            "track_id": "snapshot-person-3",
+            "object_class": "Person",
+            "bbox": [
+              0.566,
+              0.233,
+              0.11,
+              0.31
+            ],
+            "model_dimension": 1152,
+            "evidence": {
+              "media_plane": "selected_snapshot",
+              "raw_storage_consumed": false
+            },
+            "id": "9ecf164f0b85487e6cd494168fa4cda50e5c40cd7d372fd630dbef6cb06e72c7",
+            "score": 0.78117037,
+            "search_channel": "attribute",
+            "fusion_score": 0.04839549075403121,
+            "channels": [
+              "attribute"
+            ]
+          },
+          {
+            "@timestamp": "2026-07-29T09:09:48.647000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "queue.threshold",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "40c20a0debc9df2d751e33633b98ff42b351de4dfa41712080c5148a91382252",
+            "asset_id": "a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370",
+            "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:09:48.647000Z",
+            "end_time": "2026-07-29T09:09:58.480000Z",
+            "frame_count": 8,
+            "clip_sha256": "aa24e322bfc6f44bb72f3a6a915da9e96a6c7e37ed5e486c7490ad0bf296cd57",
+            "model_dimension": 768,
+            "latency_ms": 640,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "40c20a0debc9df2d751e33633b98ff42b351de4dfa41712080c5148a91382252",
+            "score": 0.5915141,
+            "search_channel": "action",
+            "fusion_score": 0.01639344262295082,
+            "channels": [
+              "action"
+            ]
+          },
+          {
+            "@timestamp": "2026-07-29T09:22:24.647000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "restricted_zone.entry",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "8086afb4b953d2fa34192daef86f2a71b57c3f589e802e851e151d000a9472aa",
+            "asset_id": "ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b",
+            "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:22:24.647000Z",
+            "end_time": "2026-07-29T09:22:34.487000Z",
+            "frame_count": 8,
+            "clip_sha256": "8250ddf16191bba3e313c8f2950242c0ae32289d5b32b5f6ec65c3536204c697",
+            "model_dimension": 768,
+            "latency_ms": 156,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "8086afb4b953d2fa34192daef86f2a71b57c3f589e802e851e151d000a9472aa",
+            "score": 0.58860683,
+            "search_channel": "action",
+            "fusion_score": 0.016129032258064516,
+            "channels": [
+              "action"
+            ]
+          },
+          {
+            "@timestamp": "2026-07-29T09:09:51.847000Z",
+            "schema_version": "1.0.0",
+            "store_id": "store-001",
+            "camera_id": "cam-01",
+            "event_type": "restricted_zone.entry",
+            "model_id": "cosmos-embed1-448p-anomaly-detection",
+            "model_version": "1.0",
+            "embedding_generation": "6b633ea73480435f",
+            "embedding_id": "14793ac83017a5589e99f6919c74152f0e68ca346b9300213cfd3018448e4588",
+            "asset_id": "a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745",
+            "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+            "source_type": "selected_clip",
+            "chunk_index": 0,
+            "chunk_seconds": 10,
+            "start_time": "2026-07-29T09:09:51.847000Z",
+            "end_time": "2026-07-29T09:10:00.887000Z",
+            "frame_count": 8,
+            "clip_sha256": "630fb4c2e56602c99399786d6f7bc69135e8f97f6683a06901e1deaeb9e6fe5d",
+            "model_dimension": 768,
+            "latency_ms": 560,
+            "evidence": {
+              "media_plane": "selected_prepared_clip",
+              "raw_storage_consumed": false
+            },
+            "id": "14793ac83017a5589e99f6919c74152f0e68ca346b9300213cfd3018448e4588",
+            "score": 0.5847759,
+            "search_channel": "action",
+            "fusion_score": 0.015873015873015872,
+            "channels": [
+              "action"
+            ]
+          }
+        ],
+        "searched_at": "2026-07-29T10:08:02.067905Z"
+      },
+      "metrics": {
+        "schema_version": "1.0.0",
+        "query_id": "phase12-fusion-person-working",
+        "k": 5,
+        "precision_at_k": 0.2,
+        "ndcg_at_k": 1.0,
+        "evaluated_at": "2026-07-29T10:08:02.069684Z"
+      }
+    }
+  ]
+}

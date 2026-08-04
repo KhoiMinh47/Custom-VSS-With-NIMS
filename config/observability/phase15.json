@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "service": "phase15-unified-api",
+  "metrics_path": "/metrics",
+  "structured_log_format": "json",
+  "audit_log": "/runtime/phase15/audit/audit.jsonl",
+  "trace_headers": ["X-Request-ID"],
+  "secret_fields_never_logged": ["authorization", "cookie", "token", "password", "rtsp_uri"]
+}

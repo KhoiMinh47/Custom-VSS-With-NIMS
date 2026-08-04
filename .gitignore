@@ -1,0 +1,51 @@
+# Secrets and operator environment
+.env
+.env.*
+!.env.example
+*.env
+!*.env.example
+/.secrets/
+
+# Project-local environments and caches
+/.venv/
+/.cache/
+/.docker-engine/
+/.docker-run/
+
+# Runtime data and generated evidence
+/runtime/
+/artifacts/
+
+# Model/data payloads
+/models/
+/data/raw-samples/
+/data/clips/
+/data/snapshots/
+/data/thumbnails/
+/data/test-videos/
+
+# External source trees
+/third_party/*
+!/third_party/README.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# JavaScript
+node_modules/
+.pnpm-store/
+
+# Editors/OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local generated deployment values
+generated.env
+/deploy/generated/
+deploy/**/resolved*.yml

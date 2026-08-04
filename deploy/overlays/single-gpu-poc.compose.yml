@@ -1,0 +1,75 @@
+name: ntc-vss-retail-poc-gpu
+
+services:
+  poc-nemotron:
+    image: ${LLM_IMAGE_PINNED:?Set the Phase-04 approved LLM image digest}
+    profiles: [local-llm]
+    environment:
+      NIM_MODEL_PROFILE: ${LLM_PROFILE_ID:?Set the verified LLM profile ID}
+      NIM_CACHE_PATH: /opt/nim/.cache
+      NIM_DISABLE_MODEL_DOWNLOAD: "true"
+      NIM_MAX_MODEL_LEN: ${LLM_MAX_MODEL_LEN:-32768}
+      NIM_KVCACHE_PERCENT: ${LLM_KVCACHE_PERCENT:-0.50}
+      NIM_MAX_NUM_SEQS: ${LLM_MAX_NUM_SEQS:-1}
+      NIM_MAX_NUM_BATCHED_TOKENS: ${LLM_MAX_NUM_BATCHED_TOKENS:-32768}
+    volumes:
+      - ../../.cache/nim/nemotron-nano-9b-v2:/opt/nim/.cache
+    ports:
+      - "127.0.0.1:30081:8000"
+    shm_size: 16gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8000/v1/health/ready >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 60
+      start_period: 180s
+    restart: "no"
+    networks: [default, infra]
+
+  poc-cosmos3:
+    image: ${VLM_IMAGE_PINNED:?Set the Phase-04 approved VLM image digest}
+    profiles: [local-vlm]
+    environment:
+      NIM_MODEL_PROFILE: ${VLM_PROFILE_ID:?Set the verified VLM profile ID}
+      NIM_CACHE_PATH: /opt/nim/.cache
+      NIM_MAX_MODEL_LEN: ${VLM_MAX_MODEL_LEN:-32768}
+      # Keep the observed Cosmos3 footprint below the project's 5 GiB
+      # cross-project reserve when this GPU is shared.
+      NIM_GPU_MEMORY_UTILIZATION: ${VLM_GPU_MEMORY_UTILIZATION:-0.65}
+      NIM_MAX_NUM_SEQS: ${VLM_MAX_NUM_SEQS:-1}
+      NIM_MAX_NUM_BATCHED_TOKENS: ${VLM_MAX_NUM_BATCHED_TOKENS:-4096}
+      NIM_COMPILATION_CONFIG: ${VLM_COMPILATION_CONFIG:-}
+      VLLM_USE_V1: ${VLM_VLLM_USE_V1:-1}
+    volumes:
+      - ../../.cache/nim/cosmos3-nano-reasoner:/opt/nim/.cache
+    ports:
+      - "127.0.0.1:30082:8000"
+    ipc: host
+    shm_size: 32gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8000/v1/health/ready >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 90
+      start_period: 240s
+    restart: "no"
+    networks: [default, infra]
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

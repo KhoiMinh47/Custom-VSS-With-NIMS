@@ -1,0 +1,31 @@
+{
+  "index_patterns": ["vss-video-embeddings-*"],
+  "composed_of": ["vss-common-fields"],
+  "priority": 300,
+  "template": {
+    "mappings": {
+      "properties": {
+        "embedding": {
+          "type": "dense_vector",
+          "dims": 768,
+          "index": true,
+          "similarity": "cosine"
+        },
+        "embedding_generation": { "type": "keyword" },
+        "embedding_id": { "type": "keyword" },
+        "asset_id": { "type": "keyword" },
+        "source_type": { "type": "keyword" },
+        "chunk_index": { "type": "integer" },
+        "chunk_seconds": { "type": "integer" },
+        "frame_count": { "type": "integer" },
+        "model_dimension": { "type": "integer" }
+      }
+    }
+  },
+  "_meta": {
+    "schema_version": 2,
+    "model": "cosmos-embed1-448p-anomaly-detection",
+    "model_version": "1.0",
+    "dimension": 768
+  }
+}

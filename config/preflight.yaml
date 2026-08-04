@@ -1,0 +1,21 @@
+schema_version: 1
+vss_release: "3.2.1"
+required:
+  os:
+    x86_64:
+      - ubuntu-22.04
+      - ubuntu-24.04
+  gpu_name: NVIDIA RTX PRO 5000 Blackwell
+  gpu_mode: OTHER-experimental
+  vram_min_mib: 47000
+  cpu_cores_min: 18
+  memory_bytes_min: 128000000000
+  filesystem_bytes_min: 1000000000000
+  project_free_bytes_min: 250000000000
+  docker_min: "28.3.3"
+  docker_max_exclusive: "29.5.0"
+  compose_min: "2.39.1"
+  nvidia_container_toolkit_min: "1.17.8"
+  ngc_cli_min: "4.10.0"
+cuda_smoke_image: nvcr.io/nvidia/cuda:12.8.1-base-ubuntu24.04
+official_reference: https://docs.nvidia.com/vss/latest/prerequisites.html

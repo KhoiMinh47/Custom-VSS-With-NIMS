@@ -1,0 +1,53 @@
+name: ntc-vss-retail-poc-phase13
+
+services:
+  summarization:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase13-summarization
+    entrypoint: ["python3", "/opt/ntc/summarization/service.py"]
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      VLM_BASE_URL: http://poc-cosmos3:8000/v1
+      VLM_MODEL: nvidia/cosmos3-nano-reasoner
+      LLM_BASE_URL: http://poc-nemotron:8000/v1
+      LLM_MODEL: nvidia/nvidia-nemotron-nano-9b-v2
+      SELECTED_CLIP_DIR: /selected-clips
+      UPLOADED_MEDIA_DIR: /uploaded-media
+      SUMMARY_RUNTIME_DIR: /runtime/summarization
+      ADMISSION_DIR: /runtime/admission
+      PROMPT_DIR: /config/prompts
+      VLM_TIMEOUT_SECONDS: "300"
+      LLM_TIMEOUT_SECONDS: "180"
+      HTTP_PORT: "8080"
+      PYTHONPATH: /opt/ntc/summarization:/opt/ntc/reporting
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/summarization:/opt/ntc/summarization:ro
+      - ../../services/reporting:/opt/ntc/reporting:ro
+      - ../../config/prompts/summarization:/config/prompts:ro
+      - ../../config/prompts/reporting:/config/reporting:ro
+      - ../../runtime/incidents/clips:/selected-clips:ro
+      - ../../runtime/media-intake-data/prepared:/uploaded-media:ro
+      - ../../runtime/summarization:/runtime/summarization
+      - ../../runtime/gpu-admission:/runtime/admission:ro
+    ports:
+      - "127.0.0.1:39410:8080"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+    networks: [infra]
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

@@ -1,0 +1,59 @@
+{
+  "index_patterns": ["vss-summaries-*"],
+  "priority": 300,
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "vss-default-retention",
+      "index.number_of_shards": 1,
+      "index.number_of_replicas": 0,
+      "index.refresh_interval": "5s"
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "schema_version": {"type": "keyword"},
+        "store_id": {"type": "keyword"},
+        "camera_id": {"type": "keyword"},
+        "job_id": {"type": "keyword"},
+        "window_start": {"type": "date"},
+        "window_end": {"type": "date"},
+        "hierarchy_level": {"type": "integer"},
+        "partial_summary_count": {"type": "integer"},
+        "executive_summary": {"type": "text"},
+        "event_ids": {"type": "keyword"},
+        "incident_event_ids": {"type": "keyword"},
+        "notable_entities": {"type": "keyword"},
+        "notable_actions": {"type": "keyword"},
+        "evidence": {
+          "type": "nested",
+          "properties": {
+            "event_id": {"type": "keyword"},
+            "camera_id": {"type": "keyword"},
+            "start_time": {"type": "date"},
+            "end_time": {"type": "date"},
+            "asset_uri": {"type": "keyword"},
+            "description": {"type": "text"}
+          }
+        },
+        "coverage_gaps": {
+          "type": "nested",
+          "properties": {
+            "start_time": {"type": "date"},
+            "end_time": {"type": "date"},
+            "status": {"type": "keyword"},
+            "reason": {"type": "text"}
+          }
+        },
+        "model_id": {"type": "keyword"},
+        "model_version": {"type": "keyword"},
+        "prompt_version": {"type": "keyword"},
+        "synthesis_source": {"type": "keyword"},
+        "created_at": {"type": "date"}
+      }
+    }
+  },
+  "_meta": {
+    "schema_version": 1,
+    "owner": "phase13-summarization"
+  }
+}

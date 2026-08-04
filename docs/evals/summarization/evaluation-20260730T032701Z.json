@@ -1,0 +1,382 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "phase13-20260730T032701Z",
+  "result": "PARTIAL",
+  "reason": "Technical evidence-grounding gates passed on three selected clips from one physical camera; sample size and human ratings are insufficient for an accuracy or hallucination-rate claim.",
+  "jobs": {
+    "short": "1b22d6531dbf654adc437849006e01b5c104934e2ae81700f807f638419212a9",
+    "long": "9c9042f0d21b9fb7fdd19ae25c1c47c43073fb2b808134379c8ee39df1e77c5a"
+  },
+  "checks": {
+    "short_completed": true,
+    "time_window_completed": true,
+    "hierarchical_partial_summaries": true,
+    "timestamp_bounds": true,
+    "all_claims_have_evidence": true,
+    "supported_qa_has_evidence": true,
+    "unsupported_qa_refuses": true,
+    "all_reports_have_evidence": true,
+    "unobserved_gap_policy": true
+  },
+  "metrics": {
+    "selected_clips": 3,
+    "caption_events_total": 7,
+    "summary_events_cited": 5,
+    "event_coverage": 0.7142857142857143,
+    "partial_summaries": 4,
+    "coverage_gaps": 1,
+    "unsupported_question_refusals": 1,
+    "human_ratings": 0
+  },
+  "supported_qa": {
+    "schema_version": "1.0.0",
+    "store_id": "store-001",
+    "question": "What visible activity appears in the selected video events?",
+    "answer": "A man in a black t-shirt and gray pants enters the frame from the right side and walks toward the back of the room. The man in the black shirt approaches the two seated men at the desk. A man in a black shirt and gray pants walks into the frame from the right side of the room. The man in the black shirt stands behind the seated man in the white shirt and leans forward, appearing to speak with him. The man in the black t-shirt continues walking and stops near the back wall, facing away from the camera. The man in the black t-shirt stops near the seated individuals and leans forward to speak with them.",
+    "status": "answered",
+    "evidence": [
+      {
+        "event_id": "822d1d47d0c18a091c85d3a2189b00ead877391256c2b5b2fa23f04f9f2a307b",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:09:54.747Z",
+        "end_time": "2026-07-29T09:09:58.447Z",
+        "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4"
+      },
+      {
+        "event_id": "c45a37659bc9cac277e7d6ee75a686cfdd88b4f2b061f2836e6d2b874bdc3c98",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:09:55.847Z",
+        "end_time": "2026-07-29T09:10:00.847Z",
+        "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4"
+      },
+      {
+        "event_id": "e3da53657abe1830b2c4763e142dfa3945d5bec1b6dbfb593246949a0dae3aeb",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:09:55.847Z",
+        "end_time": "2026-07-29T09:10:00.847Z",
+        "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4"
+      },
+      {
+        "event_id": "fd4cfc75bbd18db81ae0c373f90c82a1e2d127749277f05f700fde541497fef1",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:09:57.847Z",
+        "end_time": "2026-07-29T09:10:00.847Z",
+        "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4"
+      },
+      {
+        "event_id": "1e120473a4ae3f0aea2e3057b9e0114ea2fb32f8793ae783ca75c24b9dd3f21d",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:09:58.447Z",
+        "end_time": "2026-07-29T09:09:58.447Z",
+        "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4"
+      },
+      {
+        "event_id": "437363e4a5b18ae68df15b2314f53c0f29cd0d21598c627b5c53c2ba7ed17eeb",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:22:24.647Z",
+        "end_time": "2026-07-29T09:22:27.647Z",
+        "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4"
+      },
+      {
+        "event_id": "04550edc90833450e79850bcd7c62a9f94fea93c9bc049a68941b2b304f33a3d",
+        "camera_id": "cam-01",
+        "start_time": "2026-07-29T09:22:27.647Z",
+        "end_time": "2026-07-29T09:22:34.447Z",
+        "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4"
+      }
+    ],
+    "model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+    "model_version": "1",
+    "created_at": "2026-07-30T03:27:01.278Z",
+    "summary_id": "9c9042f0d21b9fb7fdd19ae25c1c47c43073fb2b808134379c8ee39df1e77c5a",
+    "answer_source": "nemotron"
+  },
+  "unsupported_qa": {
+    "schema_version": "1.0.0",
+    "store_id": "store-001",
+    "question": "What color was the delivery truck?",
+    "answer": "kh\u00f4ng \u0111\u1ee7 d\u1eef li\u1ec7u",
+    "status": "insufficient_evidence",
+    "reason": "no matching evidence",
+    "evidence": [],
+    "model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+    "model_version": "1",
+    "created_at": "2026-07-30T03:27:01.280Z"
+  },
+  "reports": {
+    "incident": {
+      "schema_version": "1.0.0",
+      "report_id": "cb67f6c830217660bb6545cb04a3c4132441650eeb70bd67907fa871777d9433",
+      "report_type": "incident",
+      "incident_id": "phase13-evaluation-incident",
+      "store_id": "store-001",
+      "camera_ids": [
+        "cam-01"
+      ],
+      "window_start": "2026-07-29T09:09:48.647Z",
+      "window_end": "2026-07-29T09:09:58.480Z",
+      "executive_summary": "A man in a black t-shirt and gray pants entered the store from the right side, walked towards the back, and stopped near the back wall facing away from the camera.",
+      "summary_ids": [
+        "1b22d6531dbf654adc437849006e01b5c104934e2ae81700f807f638419212a9"
+      ],
+      "important_incidents": [
+        {
+          "event_id": "0e8d45c20c9e5815775e9ca6618424fa0e9b2b1a91781e27d3776a779846d993",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:54.747Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "A man in a black t-shirt and gray pants enters from the right side of the frame and walks toward the back of the room."
+        },
+        {
+          "event_id": "1e120473a4ae3f0aea2e3057b9e0114ea2fb32f8793ae783ca75c24b9dd3f21d",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:58.447Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "The man in the black t-shirt continues walking and stops near the back wall, facing away from the camera."
+        }
+      ],
+      "evidence": [
+        {
+          "event_id": "0e8d45c20c9e5815775e9ca6618424fa0e9b2b1a91781e27d3776a779846d993",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:54.747Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "A man in a black t-shirt and gray pants enters from the right side of the frame and walks toward the back of the room."
+        },
+        {
+          "event_id": "1e120473a4ae3f0aea2e3057b9e0114ea2fb32f8793ae783ca75c24b9dd3f21d",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:58.447Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "The man in the black t-shirt continues walking and stops near the back wall, facing away from the camera."
+        }
+      ],
+      "coverage_gaps": [],
+      "model_id": "ntc-phase13-evidence-report-renderer",
+      "model_version": "1.0.0",
+      "source_summary_model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+      "source_summary_model_version": "1",
+      "created_at": "2026-07-30T03:27:01.281Z",
+      "json_path": "cb67f6c830217660bb6545cb04a3c4132441650eeb70bd67907fa871777d9433.json",
+      "markdown_path": "cb67f6c830217660bb6545cb04a3c4132441650eeb70bd67907fa871777d9433.md"
+    },
+    "shift": {
+      "schema_version": "1.0.0",
+      "report_id": "b2821024f644b22ca5535c64b5a860574f816bcd71d1707b954bb81e1d612bde",
+      "report_type": "shift",
+      "incident_id": "",
+      "store_id": "store-001",
+      "camera_ids": [
+        "cam-01"
+      ],
+      "window_start": "2026-07-29T09:09:48.647Z",
+      "window_end": "2026-07-29T09:22:34.487Z",
+      "executive_summary": "A man in a black t-shirt enters the scene from the right side, interacts with seated individuals near the store entrance, and later approaches two seated men at a desk in the back.",
+      "summary_ids": [
+        "9c9042f0d21b9fb7fdd19ae25c1c47c43073fb2b808134379c8ee39df1e77c5a"
+      ],
+      "important_incidents": [
+        {
+          "event_id": "822d1d47d0c18a091c85d3a2189b00ead877391256c2b5b2fa23f04f9f2a307b",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:54.747Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "A man in a black t-shirt and gray pants enters the frame from the right side and walks toward the back of the room."
+        },
+        {
+          "event_id": "c45a37659bc9cac277e7d6ee75a686cfdd88b4f2b061f2836e6d2b874bdc3c98",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt approaches the two seated men at the desk."
+        },
+        {
+          "event_id": "e3da53657abe1830b2c4763e142dfa3945d5bec1b6dbfb593246949a0dae3aeb",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "A man in a black shirt and gray pants walks into the frame from the right side of the room."
+        },
+        {
+          "event_id": "fd4cfc75bbd18db81ae0c373f90c82a1e2d127749277f05f700fde541497fef1",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:57.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt stands behind the seated man in the white shirt and leans forward, appearing to speak with him."
+        }
+      ],
+      "evidence": [
+        {
+          "event_id": "822d1d47d0c18a091c85d3a2189b00ead877391256c2b5b2fa23f04f9f2a307b",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:54.747Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "A man in a black t-shirt and gray pants enters the frame from the right side and walks toward the back of the room."
+        },
+        {
+          "event_id": "c45a37659bc9cac277e7d6ee75a686cfdd88b4f2b061f2836e6d2b874bdc3c98",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt approaches the two seated men at the desk."
+        },
+        {
+          "event_id": "e3da53657abe1830b2c4763e142dfa3945d5bec1b6dbfb593246949a0dae3aeb",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "A man in a black shirt and gray pants walks into the frame from the right side of the room."
+        },
+        {
+          "event_id": "fd4cfc75bbd18db81ae0c373f90c82a1e2d127749277f05f700fde541497fef1",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:57.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt stands behind the seated man in the white shirt and leans forward, appearing to speak with him."
+        },
+        {
+          "event_id": "04550edc90833450e79850bcd7c62a9f94fea93c9bc049a68941b2b304f33a3d",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:22:27.647Z",
+          "end_time": "2026-07-29T09:22:34.447Z",
+          "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4",
+          "description": "The man in the black t-shirt stops near the seated individuals and leans forward to speak with them."
+        }
+      ],
+      "coverage_gaps": [
+        {
+          "start_time": "2026-07-29T09:10:00.887Z",
+          "end_time": "2026-07-29T09:22:24.647Z",
+          "status": "unobserved",
+          "reason": "no selected media evidence covers this interval"
+        }
+      ],
+      "model_id": "ntc-phase13-evidence-report-renderer",
+      "model_version": "1.0.0",
+      "source_summary_model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+      "source_summary_model_version": "1",
+      "created_at": "2026-07-30T03:27:01.283Z",
+      "json_path": "b2821024f644b22ca5535c64b5a860574f816bcd71d1707b954bb81e1d612bde.json",
+      "markdown_path": "b2821024f644b22ca5535c64b5a860574f816bcd71d1707b954bb81e1d612bde.md"
+    },
+    "daily": {
+      "schema_version": "1.0.0",
+      "report_id": "0469d0ef39ed8c8b2254fec643f3f4a6da3669bb6cddfe969fd28d64aa09906b",
+      "report_type": "daily",
+      "incident_id": "",
+      "store_id": "store-001",
+      "camera_ids": [
+        "cam-01"
+      ],
+      "window_start": "2026-07-29T09:09:48.647Z",
+      "window_end": "2026-07-29T09:22:34.487Z",
+      "executive_summary": "A man in a black t-shirt enters the scene from the right side, interacts with seated individuals near the store entrance, and later approaches two seated men at a desk in the back.",
+      "summary_ids": [
+        "9c9042f0d21b9fb7fdd19ae25c1c47c43073fb2b808134379c8ee39df1e77c5a"
+      ],
+      "important_incidents": [
+        {
+          "event_id": "822d1d47d0c18a091c85d3a2189b00ead877391256c2b5b2fa23f04f9f2a307b",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:54.747Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "A man in a black t-shirt and gray pants enters the frame from the right side and walks toward the back of the room."
+        },
+        {
+          "event_id": "c45a37659bc9cac277e7d6ee75a686cfdd88b4f2b061f2836e6d2b874bdc3c98",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt approaches the two seated men at the desk."
+        },
+        {
+          "event_id": "e3da53657abe1830b2c4763e142dfa3945d5bec1b6dbfb593246949a0dae3aeb",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "A man in a black shirt and gray pants walks into the frame from the right side of the room."
+        },
+        {
+          "event_id": "fd4cfc75bbd18db81ae0c373f90c82a1e2d127749277f05f700fde541497fef1",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:57.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt stands behind the seated man in the white shirt and leans forward, appearing to speak with him."
+        }
+      ],
+      "evidence": [
+        {
+          "event_id": "822d1d47d0c18a091c85d3a2189b00ead877391256c2b5b2fa23f04f9f2a307b",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:54.747Z",
+          "end_time": "2026-07-29T09:09:58.447Z",
+          "asset_uri": "selected-clip://a5fea5fc6bf3a728f28d251f179c461f31e0f41798096b3975f1ff0d7a845370.mp4",
+          "description": "A man in a black t-shirt and gray pants enters the frame from the right side and walks toward the back of the room."
+        },
+        {
+          "event_id": "c45a37659bc9cac277e7d6ee75a686cfdd88b4f2b061f2836e6d2b874bdc3c98",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt approaches the two seated men at the desk."
+        },
+        {
+          "event_id": "e3da53657abe1830b2c4763e142dfa3945d5bec1b6dbfb593246949a0dae3aeb",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:55.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "A man in a black shirt and gray pants walks into the frame from the right side of the room."
+        },
+        {
+          "event_id": "fd4cfc75bbd18db81ae0c373f90c82a1e2d127749277f05f700fde541497fef1",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:09:57.847Z",
+          "end_time": "2026-07-29T09:10:00.847Z",
+          "asset_uri": "selected-clip://a67fd0907af787e1f30921fdd63d4dc137d070e7d0af335103b7cc87d5030745.mp4",
+          "description": "The man in the black shirt stands behind the seated man in the white shirt and leans forward, appearing to speak with him."
+        },
+        {
+          "event_id": "04550edc90833450e79850bcd7c62a9f94fea93c9bc049a68941b2b304f33a3d",
+          "camera_id": "cam-01",
+          "start_time": "2026-07-29T09:22:27.647Z",
+          "end_time": "2026-07-29T09:22:34.447Z",
+          "asset_uri": "selected-clip://ba71b8136dab1a4067732b041ec5452febe235e2e17fd6b24c6e91383671876b.mp4",
+          "description": "The man in the black t-shirt stops near the seated individuals and leans forward to speak with them."
+        }
+      ],
+      "coverage_gaps": [
+        {
+          "start_time": "2026-07-29T09:10:00.887Z",
+          "end_time": "2026-07-29T09:22:24.647Z",
+          "status": "unobserved",
+          "reason": "no selected media evidence covers this interval"
+        }
+      ],
+      "model_id": "ntc-phase13-evidence-report-renderer",
+      "model_version": "1.0.0",
+      "source_summary_model_id": "nvidia/nvidia-nemotron-nano-9b-v2",
+      "source_summary_model_version": "1",
+      "created_at": "2026-07-30T03:27:01.285Z",
+      "json_path": "0469d0ef39ed8c8b2254fec643f3f4a6da3669bb6cddfe969fd28d64aa09906b.json",
+      "markdown_path": "0469d0ef39ed8c8b2254fec643f3f4a6da3669bb6cddfe969fd28d64aa09906b.md"
+    }
+  }
+}

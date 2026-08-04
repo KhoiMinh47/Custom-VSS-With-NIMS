@@ -1,0 +1,131 @@
+name: ntc-vss-retail-poc-phase15
+
+services:
+  vss-ui:
+    # NVIDIA VSS 3.2.1 intentionally deploys the UI with the 3.2.0 image tag.
+    image: nvcr.io/nvidia/vss-core/vss-agent-ui:3.2.0@sha256:6362151a839067f517766f1997a19c302296fe80b9b0251aaee8f16b379503d9
+    container_name: ntc-vss-phase15-ui
+    env_file:
+      - ../../config/ui/vss-ui.env
+    network_mode: host
+    init: true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:39511/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  phase15-api:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase15-api
+    entrypoint: ["python3", "/opt/ntc/api/service.py"]
+    environment:
+      HTTP_HOST: "127.0.0.1"
+      HTTP_PORT: "39510"
+      SERVICE_REGISTRY: /config/application/service-registry.json
+      CAMERA_REGISTRY: /config/cameras/cameras.hybrid.json
+      VSS_UI_URL: http://127.0.0.1:39511
+      UPLOAD_STAGING_DIR: /runtime/phase15/vss-upload-staging
+      VLM_TEST_UPLOAD_MODE: "true"
+      OPENAPI_PATH: /config/openapi/phase15.openapi.json
+      ADMISSION_DIR: /runtime/admission
+      GPU_CONTROL_DIR: /runtime/phase15/gpu-control
+      GOVERNANCE_DIR: /runtime/phase15/governance
+      AUDIT_LOG: /runtime/phase15/audit/audit.jsonl
+      TOKEN_STORE: /run/secrets/phase15/token-hashes.json
+      PHASE15_TRUSTED_LOOPBACK_FULL_ACCESS: "true"
+      PROBE_TIMEOUT_SECONDS: "1.5"
+      SNAPSHOT_CACHE_SECONDS: "5"
+      PYTHONPATH: /opt/ntc/api:/opt/ntc/mcp:/opt/ntc/agent
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/api:/opt/ntc/api:ro
+      - ../../services/mcp:/opt/ntc/mcp:ro
+      - ../../services/agent:/opt/ntc/agent:ro
+      - ../../schemas/openapi:/config/openapi:ro
+      - ../../config/application:/config/application:ro
+      - ../../config/cameras/cameras.hybrid.json:/config/cameras/cameras.hybrid.json:ro
+      - ../../runtime/gpu-admission:/runtime/admission:ro
+      - ../../runtime/phase15:/runtime/phase15
+      - ../../.secrets/phase15:/run/secrets/phase15:ro
+    network_mode: host
+    depends_on:
+      vss-ui:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:39510/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  media-intake:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-media-intake
+    entrypoint: ["python3", "/opt/ntc/media-intake/service.py"]
+    environment:
+      HTTP_PORT: "39420"
+      MEDIA_INTAKE_DIR: /runtime/media-intake
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/media-intake:/opt/ntc/media-intake:ro
+      - ../../runtime/media-intake-data:/runtime/media-intake
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:39420/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  vlm-test:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase15-vlm-test
+    entrypoint: ["python3", "/opt/ntc/vlm-test/service.py"]
+    environment:
+      HTTP_HOST: "127.0.0.1"
+      HTTP_PORT: "39520"
+      VLM_TEST_RUNTIME_DIR: /runtime/phase15/vlm-test
+      INCIDENTS_URL: http://127.0.0.1:39121
+      SELECTED_MEDIA_URL: http://127.0.0.1:39120
+      ALERT_VERIFICATION_URL: http://127.0.0.1:39120
+      PYTHONPATH: /opt/ntc/vlm-test
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/vlm-test:/opt/ntc/vlm-test:ro
+      - ../../runtime/phase15/vlm-test:/runtime/phase15/vlm-test
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:39520/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

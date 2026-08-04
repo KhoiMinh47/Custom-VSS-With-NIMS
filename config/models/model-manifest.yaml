@@ -1,0 +1,130 @@
+schema_version: 1
+generated_at: "2026-07-28"
+status: phase07_pass_with_unsupported_host_risk
+
+release:
+  vss:
+    version: "3.2.1"
+    git_ref: v3.2.1
+    git_commit: 7640d917047cf7b0fd3085eefb8282754b56bc94
+
+topology:
+  requested: poc-single-gpu-local-serialized
+  current_decision: LOCAL_SERIALIZED_WITH_UNSUPPORTED_HOST_OVERRIDE
+  fallback: poc-feature-complete-online
+  fallback_llm_endpoint: null
+  fallback_vlm_endpoint: null
+  notes:
+    - RTX PRO 5000 Blackwell uses the experimental OTHER hardware profile.
+    - The user explicitly acknowledged the unsupported AlmaLinux/version baseline on 2026-07-23.
+    - NIMs are admitted one at a time on the single GPU.
+
+llm:
+  id: nvidia/nvidia-nemotron-nano-9b-v2
+  serving: nim
+  image: nvcr.io/nim/nvidia/nvidia-nemotron-nano-9b-v2:1
+  image_digest: sha256:a2f4a5aefe7dd0ff29bfd8d7081ce4977337d1b12081361af7b6283ff9a406b2
+  nim_profile_id: 5cf34bab34141258d0cc836c66684642d3e3f32b4daaa2008e48bd289d6bc84b
+  port: 30081
+  max_model_len: 32768
+  max_num_seqs: 4
+  cache_dir: .cache/nim/nemotron-nano-9b-v2
+  source: NVIDIA NGC/NIM
+  license: verify_from_release_artifact
+  downloaded_at: "2026-07-23T15:26:24+07:00"
+  status: smoke_pass
+  required: true
+
+vlm:
+  id: nvidia/cosmos3-nano-reasoner
+  serving: nim_or_rt_vlm
+  image: nvcr.io/nim/nvidia/cosmos3-reasoner:1.7
+  image_digest: sha256:19add3edaaa77c4030c75eb27d30939c29ca93807bb7af10a1876f05d520026c
+  nim_profile_id: e55fdb44f41441032f546360d0dcf61caa8b39fa2852d31124c03953d01e1cb3
+  vss_model_path: ngc:nim/nvidia/cosmos3-nano-reasoner:bf16-final
+  port: 30082
+  max_model_len: 32768
+  cache_dir: .cache/nim/cosmos3-nano-reasoner
+  source: NVIDIA NGC/NIM
+  license: verify_from_release_artifact
+  downloaded_at: "2026-07-23T15:52:28+07:00"
+  status: smoke_pass
+  required: true
+
+rt_cv:
+  container: nvcr.io/nvidia/vss-core/vss-rt-cv:3.2.1
+  image_digest: sha256:1a8b9879686f21cb6b9589d6139b5ac2eb960f1520aa3b4bb5f079d05fee9458
+  release_asset_managed: true
+  status: one_camera_smoke_reconnect_and_7227_second_soak_pass
+  detector:
+    family: RT-DETR Warehouse 2D
+    version: "1.0.2"
+    backbone: ResNet-50
+    input: [640, 640]
+    precision: fp16
+    initial_classes: [Person]
+    cache_dir: models/rtdetr
+    source: NVIDIA NGC RT-DETR Warehouse v1.0.2 release artifact
+    license: verify_from_ngc_release_artifact
+    artifact_sha256: 0a22264542514149bead6e8582499d9758d51e3fde2892d9d2cc378a60426267
+    status: one_camera_smoke_and_7227_second_soak_pass
+    engine:
+      path: .cache/tensorrt/GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0/rtdetr/fp16/rtdetr_warehouse_v1.0.2.fp16.onnx_b1_gpu0_fp16.engine
+      sha256: 52402a0a5d4a5e2d2fb41fe2bd6e3c39a29eb2e40fc9a9b778fcee5addd46271
+      size_bytes: 90225876
+      batch_size: 1
+      precision: fp16
+      strongly_typed: true
+      builder: TensorRT trtexec
+      builder_optimization_level: 3
+      built_at: "2026-07-28T10:06:26Z"
+      gpu_uuid: GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0
+      driver: "590.48.01"
+      tensorrt: "10.14.1"
+      status: built_smoke_pass_restart_cache_reuse_verified
+  tracker:
+    type: NvDCF
+
+rt_embed:
+  container: nvcr.io/nvidia/vss-core/vss-rt-embed:3.2.1
+  image_digest: sha256:978ef47aca4eca1e158b587a962b23a5bd9b7a3e717e61763b5c15e7228a1438
+  release_asset_managed: true
+  model: Cosmos-Embed1-448p-anomaly-detection
+  resolution: [448, 448]
+  frames_per_chunk: 8
+  chunk_seconds: 10
+  embedding_dim: 768
+  precision: fp16
+  cache_dir: models/cosmos-embed1
+  tensorrt_engine_dir_template: .cache/tensorrt/{gpu_uuid}/cosmos-embed1/fp16
+  artifact_sha256: bbf74423f980e4d11acef7e9bea1f3821c36c497ba3a79249eea20d4631897c5
+  status: smoke_pass_cache_reuse_verified
+
+object_embedding:
+  model: siglip2-so400m-patch16-256
+  upstream_release_name: siglip_v2
+  upstream_release_version: v1.1
+  resolution: [256, 256]
+  embedding_dim: 1152
+  precision: fp16
+  usage: [attribute_search, search_by_image, sku_similarity]
+  cache_dir: models/siglip2
+  artifact_sha256: 3ea2fe8b588825c5ee56888871bf271d3e48ab74fed8ecb9f973b73a53c3f34b
+  status: downloaded
+
+retail:
+  baseline:
+    detector: RT-DETR Warehouse 2D v1.0.2
+    embedder: SigLIP2 SO400M 256
+    verifier: Cosmos3 Nano Reasoner
+  custom_model:
+    status: not-trained
+    framework: NVIDIA TAO RT-DETR or compatible PyTorch
+    export: [ONNX, TensorRT]
+
+engine_build:
+  gpu_uuid: GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0
+  driver: "590.48.01"
+  cuda: null
+  tensorrt: "10.14.1"
+  status: built_and_restart_reused

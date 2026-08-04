@@ -1,0 +1,99 @@
+schema_version: 1
+status: local_serialized_verified_with_unsupported_host_override
+device_ids: ["0"]
+always_on:
+  - infra
+priority:
+  realtime_cv: 100
+  alert_verification: 90
+  user_search: 80
+  rt_vlm_alert: 75
+  retail_frame: 60
+  summarization: 50
+  search_backfill: 40
+alerting:
+  default_mode: hybrid_candidate_verification
+  hybrid_candidate_verification:
+    phase: PHASE-10
+    trigger: behavior_candidate
+    always_on:
+      - realtime_core
+      - behavior_analytics
+      - incident_queue
+      - alert_review
+    local_vlm: admitted_event_driven_window
+  direct_rt_vlm:
+    phase: PHASE-11
+    startup: explicit_only
+    enabled_by_default: false
+    selected_cameras: [cam-01]
+    max_concurrent_cameras: 1
+    requires:
+      - explicit_operator_command
+      - gpu_admission_lease
+      - rtcv_serialization
+      - labeled_evaluation_before_expansion
+gpu_profiles:
+  local_llm:
+    services: [poc-nemotron]
+    requires: [phase02_pass, llm_profile_verified, cache_present]
+    mutual_exclusion: [local_vlm, realtime_core, search_ingest, object_embedding, retail_batch]
+  local_vlm:
+    services: [poc-cosmos3]
+    requires: [phase02_pass, vlm_profile_verified, cache_present]
+    mutual_exclusion: [local_llm, realtime_core, search_ingest, object_embedding, retail_batch]
+  realtime_core:
+    services: [rtsp-relay, rt_cv, rtcv-metadata]
+    priority: 100
+  search_ingest:
+    services: [phase12_rt_embedding]
+    priority: 60
+    may_pause: [retail_batch, summarization]
+    mutual_exclusion: [realtime_core, local_llm, local_vlm, object_embedding]
+  object_embedding:
+    services: [phase12_siglip2]
+    priority: 60
+    mutual_exclusion: [realtime_core, local_llm, local_vlm, search_ingest]
+  query_decomposition:
+    services: [poc-nemotron]
+    priority: 80
+    mode: admitted_bounded_window
+    fallback: deterministic_router
+  search_critic:
+    services: [poc-cosmos3]
+    priority: 70
+    mode: admitted_top_k_only
+    unavailable_behavior: preserve_ranked_results
+  summarization_caption:
+    services: [poc-cosmos3]
+    priority: 50
+    mode: admitted_checkpointed_window
+    frame_sampling: 5_uniform_frames
+    mutual_exclusion: [realtime_core, local_llm, search_ingest, object_embedding, retail_batch]
+  summarization_llm:
+    services: [poc-nemotron]
+    priority: 50
+    mode: admitted_checkpointed_window
+    mutual_exclusion: [realtime_core, local_vlm, search_ingest, object_embedding, retail_batch]
+  retail_batch:
+    services: [retail_model]
+    priority: 40
+rules:
+  - when: alert_backlog > 0
+    pause: [summarization, search_backfill]
+  - when: gpu_memory_free_percent < 15
+    reject_new_gpu_jobs: true
+  - when: realtime_frame_drop_percent > 2
+    throttle: [search_ingest, retail_frame]
+  - when: phase12_gpu_window_active
+    serialize:
+      - realtime_core
+      - search_ingest
+      - object_embedding
+      - query_decomposition
+      - search_critic
+  - when: phase13_gpu_window_active
+    serialize:
+      - realtime_core
+      - summarization_caption
+      - summarization_llm

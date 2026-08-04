@@ -1,0 +1,151 @@
+name: ntc-vss-retail-poc-phase12
+
+x-logging: &structured_logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-rtcv-image: &rtcv_image
+  nvcr.io/nvidia/vss-core/vss-rt-cv:3.2.1@sha256:1a8b9879686f21cb6b9589d6139b5ac2eb960f1520aa3b4bb5f079d05fee9458
+
+services:
+  search:
+    image: nvcr.io/nvidia/vss-core/vss-behavior-analytics:3.2.1@sha256:f3fd84f9c9f63b9d00298161929b71c73f36b301782d58bf810e0583843c9fa6
+    container_name: ntc-vss-phase12-search
+    entrypoint: ["python3", "/opt/ntc/search/service.py"]
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      RT_EMBEDDING_URL: http://rt-embedding:8000
+      RT_EMBEDDING_READY_URL: http://rt-embedding:8000/v1/ready
+      SIGLIP_URL: http://siglip-object-embedding:9000
+      SIGLIP_READY_URL: http://siglip-object-embedding:9000/api/v1/ready
+      LLM_BASE_URL: http://poc-nemotron:8000/v1
+      LLM_MODEL: nvidia/nvidia-nemotron-nano-9b-v2
+      VLM_BASE_URL: http://poc-cosmos3:8000/v1
+      VLM_MODEL: nvidia/cosmos3-nano-reasoner
+      SELECTED_CLIP_DIR: /selected-clips
+      SELECTED_SNAPSHOT_DIR: /selected-snapshots
+      SEARCH_RUNTIME_DIR: /runtime/search
+      ADMISSION_DIR: /runtime/admission
+      HTTP_PORT: "8080"
+      PYTHONPATH: /opt/ntc/search:/opt/ntc/rt-embedding
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+    volumes:
+      - ../../services/search:/opt/ntc/search:ro
+      - ../../services/rt-embedding:/opt/ntc/rt-embedding:ro
+      - ../../config/search:/config/search:ro
+      - ../../runtime/incidents/clips:/selected-clips:ro
+      - ../../runtime/snapshots:/selected-snapshots:ro
+      - ../../runtime/search:/runtime/search
+      - ../../runtime/gpu-admission:/runtime/admission:ro
+    ports:
+      - "127.0.0.1:39310:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+    networks: [infra]
+    logging: *structured_logging
+
+  rt-embedding:
+    image: nvcr.io/nvidia/vss-core/vss-rt-embed:3.2.1@sha256:978ef47aca4eca1e158b587a962b23a5bd9b7a3e717e61763b5c15e7228a1438
+    container_name: ntc-vss-phase12-rt-embedding
+    profiles: [rt-embedding]
+    user: "1001:1001"
+    environment:
+      MODEL_PATH: git:https://huggingface.co/nvidia/Cosmos-Embed1-448p-anomaly-detection
+      MODEL_IMPLEMENTATION_PATH: /opt/nvidia/rtvi/rtvi/models/custom/samples/cosmos-embed1
+      MODEL_REPOSITORY_SCRIPT_PATH: /opt/nvidia/rtvi/rtvi/models/custom/samples/cosmos-embed1/create_triton_model_repo.py
+      NVIDIA_VISIBLE_DEVICES: "0"
+      KAFKA_ENABLED: "false"
+      INSTALL_PROPRIETARY_CODECS: "false"
+      ENABLE_OTEL_MONITORING: "false"
+      FILE_URL_ALLOWED_DIRS: /selected-clips
+      HF_HOME: /tmp/huggingface
+      LOG_LEVEL: INFO
+      TZ: UTC
+    volumes:
+      - ../../models/cosmos-embed1/ngc-cache:/opt/nvidia/rtvi/.rtvi/ngc_model_cache
+      - ../../models/cosmos-embed1/hf-cache:/tmp/huggingface
+      - ../../.cache/tensorrt/GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0/cosmos-embed1/fp16:/tmp/triton_model_repo
+      - ../../runtime/incidents/clips:/selected-clips:ro
+      - ../../runtime/search/assets:/tmp/assets
+    ports:
+      - "127.0.0.1:39320:8000"
+    ipc: host
+    ulimits:
+      memlock: {soft: -1, hard: -1}
+      stack: 67108864
+      nofile: {soft: 65535, hard: 65535}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/v1/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 80
+      start_period: 120s
+    restart: "no"
+    networks: [infra]
+    logging: *structured_logging
+
+  siglip-object-embedding:
+    image: *rtcv_image
+    container_name: ntc-vss-phase12-siglip-object
+    profiles: [siglip]
+    entrypoint: []
+    command: ["bash", "/opt/ntc/search/start-siglip.sh"]
+    environment:
+      DS_MODEL_FAMILY: rtdetr-warehouse
+      DS_MODE_FLAG: "1"
+      DS_MESSAGE_RATE: "1"
+      DS_TRACKER_REID: "false"
+      DS_SHOW_SENSOR_ID: "false"
+      TRANSFORMERS_OFFLINE: "1"
+      HF_HUB_OFFLINE: "1"
+      OTEL_SDK_DISABLED: "true"
+      TZ: UTC
+    volumes:
+      - ../../services/search:/opt/ntc/search:ro
+      - ../../services/search/start-siglip.sh:/opt/ntc/search/start-siglip.sh:ro
+      - ../../config/search/deepstream:/opt/ntc/search-config:ro
+      - ../../config/deepstream:/opt/ntc/base-deepstream:ro
+      - ../../third_party/video-search-and-summarization/deploy/docker/services/rtvi/rtvi-cv/ds-start.sh:/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/metropolis_perception_app/ds-start.sh:ro
+      - ../../models/siglip2:/opt/storage:ro
+      - ../../.cache/tensorrt/GPU-59b09ac3-aa3a-a575-1d27-cd957dda3fc0/siglip2/fp16:/opt/siglip-engine
+      - ../../runtime/snapshots:/selected-snapshots:ro
+    ports:
+      - "127.0.0.1:39321:9000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/api/v1/ready', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 80
+      start_period: 120s
+    restart: "no"
+    networks: [infra]
+    logging: *structured_logging
+
+networks:
+  infra:
+    name: ntc-vss-retail-infra
+    external: true

@@ -1,0 +1,60 @@
+{
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "vss-default-retention",
+      "index.number_of_shards": 1,
+      "index.number_of_replicas": 0,
+      "index.refresh_interval": "5s"
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "schema_version": { "type": "keyword" },
+        "store_id": { "type": "keyword" },
+        "camera_id": { "type": "keyword" },
+        "correlation_id": { "type": "keyword" },
+        "event_id": { "type": "keyword" },
+        "event_type": { "type": "keyword" },
+        "model_id": { "type": "keyword" },
+        "model_version": { "type": "keyword" },
+        "source_model_id": { "type": "keyword" },
+        "source_model_version": { "type": "keyword" },
+        "config_version": { "type": "integer" },
+        "candidate": { "type": "boolean" },
+        "evaluation": { "type": "boolean" },
+        "evaluation_run_id": { "type": "keyword" },
+        "start_time": { "type": "date" },
+        "end_time": { "type": "date" },
+        "confidence": { "type": "float" },
+        "asset_uri": { "type": "keyword", "index": false },
+        "incident_id": { "type": "keyword" },
+        "source_event_id": { "type": "keyword" },
+        "status": { "type": "keyword" },
+        "verdict": { "type": "keyword" },
+        "reason": { "type": "text" },
+        "retry_count": { "type": "integer" },
+        "clip_start_time": { "type": "date" },
+        "clip_end_time": { "type": "date" },
+        "clip_sha256": { "type": "keyword" },
+        "clip_bytes": { "type": "long" },
+        "verifier_model_id": { "type": "keyword" },
+        "verifier_model_version": { "type": "keyword" },
+        "prompt_version": { "type": "keyword" },
+        "latency_ms": { "type": "long" },
+        "created_at": { "type": "date" },
+        "updated_at": { "type": "date" },
+        "raw_response_excerpt": { "type": "text", "index": false },
+        "feedback_label": { "type": "keyword" },
+        "feedback_at": { "type": "date" },
+        "feedback_note": { "type": "text" },
+        "evidence": { "type": "flattened" },
+        "payload": { "type": "flattened" }
+      }
+    }
+  },
+  "_meta": {
+    "schema_version": 1,
+    "owner": "ntc-vss-retail-poc"
+  }
+}

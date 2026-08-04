@@ -1,0 +1,11 @@
+store_id,camera_id,camera_name,role,timezone,main_stream_secret_ref,ai_stream_secret_ref,codec,main_width,main_height,main_fps,ai_width,ai_height,ai_fps,recording_retention_days,rt_embed_mode,rt_vlm_mode,shelf_or_zone_ref,owner,notes
+poc-store-01,CAM-01,Entrance,entrance,Asia/Ho_Chi_Minh,secret://cameras/CAM-01/main,secret://cameras/CAM-01/ai,,,,,,,,7,enabled,event-driven,,,
+poc-store-01,CAM-02,Exit,exit,Asia/Ho_Chi_Minh,secret://cameras/CAM-02/main,secret://cameras/CAM-02/ai,,,,,,,,7,enabled,event-driven,,,
+poc-store-01,CAM-03,Checkout 1,checkout,Asia/Ho_Chi_Minh,secret://cameras/CAM-03/main,secret://cameras/CAM-03/ai,,,,,,,,7,enabled,event-driven,,,
+poc-store-01,CAM-04,Checkout 2,checkout,Asia/Ho_Chi_Minh,secret://cameras/CAM-04/main,secret://cameras/CAM-04/ai,,,,,,,,7,enabled,event-driven,,,
+poc-store-01,CAM-05,Crowded Area,traffic,Asia/Ho_Chi_Minh,secret://cameras/CAM-05/main,secret://cameras/CAM-05/ai,,,,,,,,7,enabled,disabled,,,
+poc-store-01,CAM-06,Shelf A,shelf,Asia/Ho_Chi_Minh,secret://cameras/CAM-06/main,secret://cameras/CAM-06/ai,,,,,,,,7,scheduled,roi-batch,SHELF-A,,
+poc-store-01,CAM-07,Shelf B,shelf,Asia/Ho_Chi_Minh,secret://cameras/CAM-07/main,secret://cameras/CAM-07/ai,,,,,,,,7,scheduled,roi-batch,SHELF-B,,
+poc-store-01,CAM-08,Shelf C,shelf,Asia/Ho_Chi_Minh,secret://cameras/CAM-08/main,secret://cameras/CAM-08/ai,,,,,,,,7,scheduled,roi-batch,SHELF-C,,
+poc-store-01,CAM-09,Backroom,staff-zone,Asia/Ho_Chi_Minh,secret://cameras/CAM-09/main,secret://cameras/CAM-09/ai,,,,,,,,7,enabled,event-driven,,,
+poc-store-01,CAM-10,Overview,overview,Asia/Ho_Chi_Minh,secret://cameras/CAM-10/main,secret://cameras/CAM-10/ai,,,,,,,,7,enabled,benchmark-one-stream,,,

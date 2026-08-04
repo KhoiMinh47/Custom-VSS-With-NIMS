@@ -1,0 +1,18 @@
+# topic|partitions|retention_ms
+vss.stream.status|3|604800000
+vss.rt-cv.frames|6|86400000
+vss.behavior.events|6|604800000
+vss.incidents.candidate|3|2592000000
+vss.incidents.verified|3|2592000000
+vss.rt-vlm.captions|1|604800000
+vss.rt-vlm.incidents|1|2592000000
+vss.rt-vlm.errors|1|7776000000
+vss.embeddings.video|3|604800000
+vss.embeddings.object|3|604800000
+mdx-vlm-captions|3|604800000
+mdx-structured-events-summary|3|2592000000
+vss.retail.results|3|2592000000
+vss.jobs.status|3|604800000
+vss.dlq|3|7776000000
+vss.system.test|1|86400000
+mdx-raw|3|86400000
