@@ -17,6 +17,7 @@ một NVIDIA VSS UI thống nhất.
 - [Kiến trúc tổng thể](#kiến-trúc-tổng-thể)
 - [Model và NVIDIA NIM](#model-và-nvidia-nim)
 - [Các pipeline chính](#các-pipeline-chính)
+- [Setup sau khi clone](#setup-sau-khi-clone)
 - [Vai trò của Kafka, PostgreSQL và các data service](#vai-trò-của-kafka-postgresql-và-các-data-service)
 - [GPU admission và giới hạn phần cứng](#gpu-admission-và-giới-hạn-phần-cứng)
 - [Các nhóm phase](#các-nhóm-phase)
@@ -424,6 +425,10 @@ Xem [phase.md](phase.md) và
 
 ## Cách chạy
 
+Nếu clone project trên máy mới, đọc [SETUP.md](SETUP.md) trước. Tài liệu đó
+liệt kê prerequisite, upstream VSS checkout, secret local, NIM/model cache,
+thứ tự start và các bước kiểm tra. Phần dưới đây là quick reference.
+
 ### Bootstrap
 
 ```bash
@@ -497,6 +502,7 @@ artifacts/               ignored manifests, benchmark và evaluation evidence
 ## Tài liệu
 
 - [Documentation index](docs/README.md)
+- [Setup sau khi clone](SETUP.md)
 - [Current project state](PROJECT_STATE.md)
 - [Detailed pipelines](docs/architecture/PIPELINES.md)
 - [Services, models and data stores](docs/architecture/SERVICES-AND-MODELS.md)

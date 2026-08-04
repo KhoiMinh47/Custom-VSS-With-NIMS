@@ -11,6 +11,9 @@ runtime và evidence lịch sử.
 4. [Services, model và data stores](architecture/SERVICES-AND-MODELS.md)
 5. [Phase guide](../phase.md)
 
+Nếu clone trên máy mới, đọc [SETUP sau khi clone](../SETUP.md) trước khi chạy
+Compose hoặc tải NIM/model cache.
+
 ## Kiến trúc hiện hành
 
 - [Pipeline catalog](architecture/PIPELINES.md)
