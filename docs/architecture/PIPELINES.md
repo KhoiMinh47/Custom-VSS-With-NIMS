@@ -52,6 +52,14 @@ flowchart LR
     VIOS --> CARD[Credential-free inventory card]
 ```
 
+```text
+Video Management / + Upload Stream
+  -> same-origin POST /workspace/stream-sources
+  -> validate rtsp:// URL and display name
+  -> fixed VIOS sensor/add upstream
+  -> credential-free inventory card
+```
+
 Delete từ NVIDIA UI gọi compatibility route theo display name. Gateway resolve
 tên về stable VIOS source ID rồi dùng guarded delete. Stable `cam-01` có
 `can_delete=false`; stream user-added mới có thể xóa.
@@ -82,6 +90,18 @@ flowchart LR
     QUEUE --> JPEG[NVJPEG multipart MJPEG]
     JPEG --> ENDPOINT[/cam-01/live.mjpeg]
     ENDPOINT --> UI[Streaming card / Open Live]
+```
+
+```text
+cam-01 VIOS proxy
+  -> GStreamer rtspsrc TCP
+     latency=100 ms
+     drop-on-latency=true
+     buffer-mode=none
+  -> leaky queue (2 frames)
+  -> NVJPEG multipart MJPEG
+  -> /workspace/cameras/cam-01/live.mjpeg
+  -> Streaming card / Open Live
 ```
 
 Leaky queue bỏ frame cũ khi client chậm, tránh tích lũy 1–2 phút backlog.
@@ -132,6 +152,15 @@ flowchart LR
     DS --> DET[RT-DETR + NvDCF]
     DET --> RAW[mdx-raw detections]
     RAW --> CAND[Bounded candidate contract]
+```
+
+```text
+staged MP4/MKV
+  -> dedicated rtcv-file-batch Compose
+  -> pinned VSS RT-CV image
+  -> DeepStream file source
+  -> mdx-raw detections
+  -> bounded candidate contract
 ```
 
 File batch có lease `rtcv_file_batch`. Nó chỉ tạo candidate khi RT-CV thật
@@ -207,6 +236,17 @@ flowchart LR
     COLLECT --> INDEX[Direct alert index/UI]
 ```
 
+```text
+cam-01 credential-free H.264 relay
+  -> VSS RT-VLM
+  -> 8-second chunk
+  -> 5 uniformly fixed frames
+  -> Cosmos3 semantic prompt
+  -> VisionLLM protobuf
+  -> CPU result collector
+  -> direct alert index/UI
+```
+
 Direct mode không consume RT-CV metadata hoặc behavior candidate. Nó phù hợp
 semantic use case khó viết rule nhưng tốn GPU hơn hybrid. Chính sách hiện tại:
 hybrid mặc định, direct chỉ explicit start và tối đa một camera.
@@ -262,6 +302,17 @@ flowchart LR
     VLM --> SAVE[Optional Save to Store]
 ```
 
+```text
+live RT-CV
+  -> Behavior Analytics candidate
+  -> Incident Queue selected clip
+  -> VLM Test / Realtime candidate list
+  -> Launch VLM test
+  -> copy exact selected clip to staging
+  -> Cosmos3 bounded inference
+  -> optional Save to Store
+```
+
 Không thể đảm bảo “zero-delay VLM” vì:
 
 - candidate cần đủ event context và post-roll;
@@ -284,6 +335,14 @@ flowchart LR
     VLM --> RESULT[New result]
 ```
 
+```text
+Store asset saved after completed VLM
+  -> Launch VLM
+  -> new staging-only job referencing exact Store media
+  -> admitted Cosmos3 run
+  -> new result
+```
+
 Retest không duplicate Store asset. Muốn lưu một kết quả/media version khác
 phải qua explicit Save contract.
 
@@ -300,6 +359,17 @@ flowchart LR
     MANIFEST --> PREP[Prepared MP4]
     PREP --> URI[uploaded-media://sha256.mp4]
     URI --> SUMMARY[Phase 13 read-only selected media]
+```
+
+```text
+browser MP4/MKV upload
+  -> bounded same-origin BFF
+  -> CPU media-intake
+  -> filename/MIME/container/H.264/SHA-256 validation
+  -> active upload manifest
+  -> prepared MP4
+  -> uploaded-media://<sha256>.mp4
+  -> Phase 13 read-only selected media
 ```
 
 MKV hợp lệ có thể được catalog nhưng `summary_ready=false` nếu chưa có remux
@@ -320,6 +390,15 @@ flowchart LR
     VECTOR --> INDEX[vss-video-embeddings index]
 ```
 
+```text
+selected-clip:// asset
+  -> segment ~10 seconds
+  -> sample 8 frames at 448x448
+  -> Cosmos-Embed1 FP16 TensorRT
+  -> 768-dimensional vector
+  -> vss-video-embeddings index
+```
+
 ### Object/image
 
 ```mermaid
@@ -327,6 +406,13 @@ flowchart LR
     CROP[Selected snapshot/object crop] --> EMBED[SigLIP2 256x256 FP16 TensorRT]
     EMBED --> VECTOR[1152-dimensional vector]
     VECTOR --> INDEX[Object embedding index]
+```
+
+```text
+selected-snapshot/object crop
+  -> SigLIP2 256x256 FP16 TensorRT
+  -> 1152-dimensional vector
+  -> object embedding index
 ```
 
 Đổi model/version/vector dimension bắt buộc đổi generation và re-index.
@@ -387,6 +473,16 @@ flowchart LR
     CLEAN --> SSE[SSE answer]
 ```
 
+```text
+NVIDIA VSS Chat drawer
+  -> /compat/chat/stream
+  -> same-origin gateway
+  -> verify active LLM lease
+  -> fixed Nemotron endpoint 127.0.0.1:30081
+  -> strip reasoning delimiters
+  -> SSE answer
+```
+
 Browser-supplied provider URL bị bỏ qua. Chat không tự bật LLM. Khi LLM
 offline, UI phải hiển thị standby/capability guidance thay vì fake answer.
 
@@ -423,6 +519,16 @@ flowchart TB
     AUDIT --> LOG[Structured project-local audit]
 ```
 
+```text
+service health/metrics
+  -> Prometheus
+  -> Grafana
+
+mutating API/tool/GPU action
+  -> identity + request_id + action + outcome
+  -> structured project-local audit
+```
+
 Logs không được chứa RTSP credential, NGC key, bearer token hoặc raw cookies.
 Kafka lag, DLQ size, GPU/VRAM, model readiness, stream state, inference latency
 và job age là các tín hiệu vận hành chính.
@@ -439,6 +545,16 @@ flowchart LR
     TOPK --> VLM[Cosmos3 uncertain-case verification]
     VLM --> RESULT[Empty / partial / unknown / not-evaluable]
     RESULT --> EVIDENCE[Planogram/SKU result with evidence]
+```
+
+```text
+scheduled shelf ROI frame
+  -> quality gate
+  -> RT-DETR / occupancy candidate
+  -> SigLIP2 product/reference top-K
+  -> Cosmos3 uncertain-case verification
+  -> empty/partial/unknown/not-evaluable
+  -> planogram/SKU result with evidence
 ```
 
 Pipeline chỉ được mở khi có shelf ROI, product master, reference image,

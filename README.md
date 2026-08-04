@@ -144,6 +144,13 @@ flowchart LR
     VIOS --> SELECT[Snapshot or selected clip]
 ```
 
+```text
+Physical RTSP / managed RTSP
+  -> VIOS Sensor + StreamProcessing + Ingress
+  -> live/proxy + raw recording + timeline
+  -> snapshot hoặc selected clip khi workflow yêu cầu
+```
+
 VIOS là chủ sở hữu video plane. AI không mount và quét toàn bộ raw archive.
 
 ### 2. Realtime RT-CV và behavior
@@ -160,6 +167,18 @@ flowchart LR
     BA --> OUT[Count / ROI / dwell / queue / heatmap / candidate]
 ```
 
+```text
+AI substream
+  -> secure RTSP relay
+  -> DeepStream decode
+  -> RT-DETR detection
+  -> NvDCF tracking
+  -> NVIDIA protobuf on mdx-raw
+  -> normalized JSON on vss.rt-cv.frames
+  -> Behavior Analytics
+  -> count / line / ROI / dwell / queue / heatmap / candidate
+```
+
 ### 3. Hybrid candidate → VLM alert
 
 ```mermaid
@@ -170,6 +189,16 @@ flowchart LR
     PREP --> VLM[Cosmos3 structured verdict]
     VLM --> VERDICT[Confirmed / rejected / uncertain]
     VERDICT --> OUT[Elasticsearch + Alerts UI + feedback]
+```
+
+```text
+Behavior candidate
+  -> deterministic incident
+  -> VIOS selected clip (4 s pre-roll + 4 s post-roll)
+  -> H.264 1280×720 media preparation
+  -> Cosmos3 structured verdict
+  -> confirmed / rejected / uncertain
+  -> Elasticsearch + Alerts UI + feedback
 ```
 
 Đây là alert mode mặc định vì tiết kiệm GPU hơn direct RT-VLM.
@@ -188,6 +217,19 @@ flowchart LR
     RESULT --> SAVE[Explicit Save to Store]
 ```
 
+```text
+Drop/select MP4/MKV
+  -> staging-only upload
+  -> host GPU worker queue
+  -> stop conflicting GPU profile
+  -> RT-CV file batch
+  -> real detection candidate
+  -> stop RT-CV batch
+  -> admit Cosmos3
+  -> VLM verdict
+  -> explicit Save to Store
+```
+
 Chọn file là upload tự bắt đầu. Video không vào Store trước khi VLM hoàn tất và
 người dùng bấm `Save to Store`. Nếu RT-CV không detect object, job kết thúc
 `no_rtcv_candidate`; hệ thống không tạo candidate giả.
@@ -204,6 +246,15 @@ flowchart LR
     RESULT --> SAVE[Optional Save to Store]
 ```
 
+```text
+RT-CV + Behavior candidate đã persist
+  -> VLM Test / Realtime
+  -> copy exact selected clip vào staging
+  -> Cosmos3 admission/inference
+  -> result trong staging
+  -> optional Save to Store
+```
+
 Đây là bounded-clip realtime workflow, không phải đưa một RTSP vô hạn trực
 tiếp vào VLM. Candidate mới chỉ xuất hiện khi RT-CV realtime đang healthy.
 
@@ -217,6 +268,13 @@ flowchart LR
     VLM --> RESULT[New result]
 ```
 
+```text
+Post-VLM Store asset
+  -> Launch VLM
+  -> staging retest job
+  -> Cosmos3 result mới
+```
+
 Launch không tạo thêm một bản Store mới. Store chỉ chứa media được save rõ
 ràng sau một VLM result hoàn tất.
 
@@ -228,6 +286,14 @@ flowchart LR
     CHUNK --> FRAMES[5 fixed frames]
     FRAMES --> VLM[Cosmos3 through VSS RT-VLM]
     VLM --> ALERT[Semantic alert/result]
+```
+
+```text
+Selected cam-01 stream
+  -> 8-second bounded chunk
+  -> 5 fixed frames
+  -> Cosmos3 through VSS RT-VLM
+  -> semantic alert/result
 ```
 
 Mode này opt-in, giới hạn một camera và phải serialize với RT-CV.
@@ -247,6 +313,15 @@ flowchart LR
     CRITIC --> EVIDENCE[Camera + UTC + clip + score]
 ```
 
+```text
+Selected clips -> Cosmos-Embed1 -> 768-d video vectors
+Object crops    -> SigLIP2       -> 1152-d image/object vectors
+User query      -> deterministic router or Nemotron decomposition
+                -> action / attribute / fusion / image retrieval
+                -> optional Cosmos3 top-K critic
+                -> camera + UTC + selected clip + score
+```
+
 Khi GPU providers offline, cached vectors và deterministic routing vẫn cho
 phép search; critic được ghi `unavailable`, không giả kết quả verified.
 
@@ -260,6 +335,16 @@ flowchart TB
     CHECK --> SUMMARY[Nemotron partial/hierarchical summary]
     SUMMARY --> QA[Grounded Q&A]
     SUMMARY --> REPORT[Incident / shift / daily JSON + Markdown report]
+```
+
+```text
+Explicit selected clips
+  -> five-frame sampling per clip
+  -> Cosmos3 timestamped captions
+  -> checkpoint after each clip
+  -> Nemotron partial/hierarchical summary
+  -> grounded Q&A
+  -> incident / shift / daily JSON + Markdown report
 ```
 
 Khoảng thời gian không có selected media là `unobserved`, không được diễn giải
