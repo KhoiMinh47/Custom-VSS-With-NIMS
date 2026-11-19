@@ -1,5 +1,33 @@
 # PHASE-15 HANDOFF — unified VSS workspace refinement
 
+## 2026-08-05 Real-time Alerts URL repair (current)
+
+The NVIDIA Real-time Alerts screen was showing `Alerts API URL is not
+configured` because the browser environment did not define
+`NEXT_PUBLIC_ALERTS_API_URL`. The project environment now points the screen
+to the same-origin Phase 15 gateway at
+`/compat/alert-bridge/api/v1`; the gateway delegates only the fixed
+loopback `/api/v1/realtime` rule routes to the pinned VSS Alert Verification
+3.2.0 service. The 3.2.0 tag is intentional in the VSS 3.2.1 deployment
+assets.
+
+Runtime verification after recreating the UI/API containers:
+
+- the rendered UI environment contains the same-origin alert URL;
+- `GET /compat/alert-bridge/api/v1/realtime` returns HTTP 200 with an empty
+  rule list;
+- malformed rule input is returned as an upstream validation error rather
+  than the previous generic invalid-response message.
+
+The screen is therefore fixed at the control-plane/configuration boundary,
+but this is not a full real-time inference PASS. The current direct RT-VLM
+endpoint is ready while its Cosmos3 provider is stopped; the project
+admission check also reports the GPU occupied by other registered workloads.
+Creating a rule has not been presented as successful evidence. Realtime-rule
+persistence is currently disabled in this compatibility overlay because the
+upstream service's Elasticsearch client is incompatible with the project's
+Elasticsearch 8.17 endpoint, so any temporary rule state is not durable.
+
 ## 2026-08-04 documentation consolidation and current checkpoint
 
 The GitHub-facing documentation has been consolidated around one current

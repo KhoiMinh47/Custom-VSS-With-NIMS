@@ -30,6 +30,9 @@ Phase 15 hiện bổ sung:
 - automatic upload → RT-CV file batch → candidate → VLM;
 - LLM/VLM web ON/OFF qua host worker/admission;
 - explicit post-VLM Save to Store.
+- Real-time Alerts tab now has a same-origin gateway URL and a working rule-list
+  control plane; rule start remains `PARTIAL` until an admitted real-time VLM
+  provider is available.
 
 Không được gọi project production-ready: runtime đang có một camera vật lý,
 accuracy set còn nhỏ, RT-CV realtime unavailable tại checkpoint, Retail AI
@@ -46,6 +49,7 @@ chưa triển khai và topology GPU chưa được NVIDIA validate.
 | RT-CV realtime core | Unavailable |
 | Behavior Analytics | Healthy |
 | Incident Queue + Alert Review | Healthy |
+| Real-time Alerts control plane | Healthy for list/read; VLM start blocked |
 | Direct RT-VLM result collector | Healthy |
 | Search CPU service | Healthy |
 | Summary/Q&A CPU service | Healthy |
@@ -202,6 +206,9 @@ Runtime model evidence is documented in the phase handoffs/evaluation reports.
 5. Phase 15 browser accessibility/multi-viewport evidence remains incomplete.
 6. Prometheus still needs a safe scrape/relay for host-loopback Phase 15 API;
    do not bind the API to `0.0.0.0` as a shortcut.
+7. The Real-time Alerts UI adapter is wired and its list endpoint is healthy,
+   but creating a rule is blocked while the admitted Cosmos3/RTVI provider is
+   unavailable; no successful live alert inference is claimed.
 7. Current trusted-loopback admin mode is PoC-only and must not be exposed to
    LAN/Internet; production TLS/IdP remains incomplete.
 8. Host differs from NVIDIA prerequisites: AlmaLinux 8.10, Docker 26.1.3,

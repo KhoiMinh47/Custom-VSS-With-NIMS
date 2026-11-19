@@ -1,6 +1,70 @@
 name: ntc-vss-retail-poc-phase15
 
 services:
+  alert-realtime-redis:
+    image: redis@sha256:c5e375abb885e6b2021c0377879e4890bf76f9065b8922ffc113f2b226b9fc17
+    container_name: ntc-vss-phase15-alert-realtime-redis
+    command: ["redis-server", "--port", "6379"]
+    ports:
+      - "127.0.0.1:6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  alert-realtime:
+    # VSS 3.2.1 intentionally keeps this upstream alert service at its 3.2.0 tag.
+    image: nvcr.io/nvidia/vss-core/vss-alert-verification:3.2.0@sha256:a36745d216ca2396acb2491c75f3af05884e207e782c445e76b06df4976aa275
+    container_name: ntc-vss-phase15-alert-realtime
+    entrypoint: ["/usr/local/bin/python", "/app/start-alert-realtime.py"]
+    environment:
+      EXTERNAL_IP: "127.0.0.1"
+      INTERNAL_IP: "127.0.0.1"
+      LLM_MODE: "local_shared"
+      VLM_MODE: "local_shared"
+      VLM_BASE_URL: "http://127.0.0.1:39200"
+      VLM_NAME: "nvidia/cosmos3-nano-reasoner"
+      RTVI_VLM_BASE_URL: "http://127.0.0.1:39200"
+      RTVI_VLM_MODEL_TO_USE: "nvidia/cosmos3-nano-reasoner"
+      CONFIG_PATH: /app/runtime/config.yml
+      ALWAYS_ON_RULES_CONFIG: /app/configs/realtime-config.yml
+      FASTAPI_PORT: "9080"
+      PROMETHEUS_METRICS_ENABLED: "false"
+      PYTHONUNBUFFERED: "1"
+      TZ: UTC
+      ALERT_REDIS_PORT: "6380"
+    volumes:
+      - ../../third_party/video-search-and-summarization/deploy/docker/developer-profiles/dev-profile-alerts/vlm-as-verifier/configs/config.yml:/app/configs/config.yml:ro
+      - ../../third_party/video-search-and-summarization/deploy/docker/industry-profiles/warehouse-operations/vlm-as-verifier/realtime-config.yml:/app/configs/realtime-config.yml:ro
+      - ../../third_party/video-search-and-summarization/deploy/docker/developer-profiles/dev-profile-alerts/vlm-as-verifier/configs/alert_type_config.json:/app/alert_type_config.json:ro
+      - ../../third_party/video-search-and-summarization/deploy/docker/services/alert/scripts/env-substitute.py:/app/env-substitute.py:ro
+      - ../../scripts/alert-realtime-start.py:/app/start-alert-realtime.py:ro
+    tmpfs:
+      - /app/runtime:mode=1777,size=10M
+    network_mode: host
+    depends_on:
+      alert-realtime-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9080/api/v1/realtime', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
   vss-ui:
     # NVIDIA VSS 3.2.1 intentionally deploys the UI with the 3.2.0 image tag.
     image: nvcr.io/nvidia/vss-core/vss-agent-ui:3.2.0@sha256:6362151a839067f517766f1997a19c302296fe80b9b0251aaee8f16b379503d9

@@ -837,6 +837,27 @@ class Handler(BaseHTTPRequestHandler):
                         },
                     )
                     return
+                realtime_alert_match = re.fullmatch(
+                    r"/compat/alert-bridge/api/v1/realtime(?:/([A-Za-z0-9_-]{1,100}))?",
+                    path,
+                )
+                if realtime_alert_match:
+                    if query:
+                        raise WorkspaceError(
+                            400,
+                            "unsupported_query_parameter",
+                            "request",
+                            False,
+                            "Realtime alert query parameters are not supported.",
+                        )
+                    upstream_path = "/api/v1/realtime"
+                    if realtime_alert_match.group(1):
+                        upstream_path += f"/{realtime_alert_match.group(1)}"
+                    status, value = self.runtime.workspace.realtime_alert_rules(
+                        "GET", upstream_path, request_id
+                    )
+                    self._json(status, value)
+                    return
                 self._json(404, {"status": "not_found", "request_id": request_id})
                 return
             if path == WORKSPACE_PREFIX or path.startswith(f"{WORKSPACE_PREFIX}/"):
@@ -1217,6 +1238,32 @@ class Handler(BaseHTTPRequestHandler):
                 if value.get("vlmTestJobId"):
                     self._queue_vlm_test_workflow(identity, request_id, value)
                 self._json(status, value); return
+            realtime_alert_match = re.fullmatch(
+                r"/compat/alert-bridge/api/v1/realtime(?:/([A-Za-z0-9_-]{1,100}))?",
+                path,
+            )
+            if realtime_alert_match:
+                identity = self._authorized("tools:execute", request_id)
+                if identity is None:
+                    return
+                payload = self._read_json(max_bytes=256 * 1024)
+                if not isinstance(payload, dict):
+                    raise ValueError("realtime alert rule requires a JSON object")
+                upstream_path = "/api/v1/realtime"
+                if realtime_alert_match.group(1):
+                    upstream_path += f"/{realtime_alert_match.group(1)}"
+                status, value = self.runtime.workspace.realtime_alert_rules(
+                    "POST", upstream_path, request_id, payload
+                )
+                self._workspace_audit(
+                    identity,
+                    "workspace.realtime_alert_rule.create",
+                    request_id,
+                    realtime_alert_match.group(1) or "new",
+                    mutating=True,
+                )
+                self._json(status, value)
+                return
             complete = re.fullmatch(r"/compat/agent/api/v1/videos/([0-9a-f]{64})/complete", path)
             if complete:
                 self._authorized("tools:execute", request_id)
@@ -1888,19 +1935,28 @@ class Handler(BaseHTTPRequestHandler):
             r"/compat/agent/api/v1/rtsp-streams/delete/([^/]{1,240})",
             path,
         )
+        compat_realtime_alert_delete_match = re.fullmatch(
+            r"/compat/alert-bridge/api/v1/realtime/([A-Za-z0-9_-]{1,100})",
+            path,
+        )
         if (
             match is None
             and upload_match is None
             and stream_source_match is None
             and compat_rtsp_delete_match is None
+            and compat_realtime_alert_delete_match is None
         ):
             self._json(404, {"status": "not_found", "request_id": request_id})
             return
         try:
             identity = self._authorized(
-                "stream:control"
-                if stream_source_match is not None or compat_rtsp_delete_match is not None
-                else "gpu:control",
+                "tools:execute"
+                if compat_realtime_alert_delete_match is not None
+                else (
+                    "stream:control"
+                    if stream_source_match is not None or compat_rtsp_delete_match is not None
+                    else "gpu:control"
+                ),
                 request_id,
             )
             if identity is None:
@@ -1914,6 +1970,18 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 action = "workspace.stream_source.delete"
                 resource = source_name
+            elif compat_realtime_alert_delete_match is not None:
+                if not self._same_origin_request():
+                    raise ValueError("cross-origin mutation rejected")
+                payload = self._read_json(max_bytes=64 * 1024)
+                if payload:
+                    raise ValueError("realtime alert rule delete requires an empty JSON object")
+                identifier = compat_realtime_alert_delete_match.group(1)
+                status, value = self.runtime.workspace.realtime_alert_rules(
+                    "DELETE", f"/api/v1/realtime/{identifier}", request_id
+                )
+                action = "workspace.realtime_alert_rule.delete"
+                resource = identifier
             elif stream_source_match is not None:
                 payload = self._read_json()
                 if payload:
@@ -1950,16 +2018,24 @@ class Handler(BaseHTTPRequestHandler):
                 self._workspace_audit(
                     identity,
                     action if "action" in locals() else (
-                        "workspace.stream_source.delete"
-                        if stream_source_match is not None or compat_rtsp_delete_match is not None
-                        else ("workspace.upload.delete" if upload_match is not None else "workspace.alert.delete")
+                        "workspace.realtime_alert_rule.delete"
+                        if compat_realtime_alert_delete_match is not None
+                        else (
+                            "workspace.stream_source.delete"
+                            if stream_source_match is not None or compat_rtsp_delete_match is not None
+                            else ("workspace.upload.delete" if upload_match is not None else "workspace.alert.delete")
+                        )
                     ),
                     request_id,
                     resource if "resource" in locals() else (
                         stream_source_match.group(1)
                         if stream_source_match is not None
                         else (unquote(compat_rtsp_delete_match.group(1)) if compat_rtsp_delete_match is not None
-                        else (upload_match.group(1) if upload_match is not None else f"{match.group(1)}:{match.group(2)}"))
+                        else (upload_match.group(1) if upload_match is not None else (
+                            compat_realtime_alert_delete_match.group(1)
+                            if compat_realtime_alert_delete_match is not None
+                            else f"{match.group(1)}:{match.group(2)}"
+                        )))
                     ),
                     mutating=True,
                     outcome="rejected" if error.status < 500 else "failed",

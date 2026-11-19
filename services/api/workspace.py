@@ -42,6 +42,7 @@ UPSTREAMS = {
     "summarization": "http://127.0.0.1:39410",
     "media-intake": "http://127.0.0.1:39420",
     "vlm-test": "http://127.0.0.1:39520",
+    "alert-realtime": "http://127.0.0.1:9080",
     "nemotron": "http://127.0.0.1:30081",
 }
 
@@ -267,6 +268,22 @@ class FixedUpstreamClient:
                 service_id,
                 False,
                 "The upstream service rejected the validated request.",
+            )
+        if status == 422:
+            return WorkspaceError(
+                422,
+                "upstream_validation_failed",
+                service_id,
+                False,
+                "The upstream service rejected the request fields.",
+            )
+        if status == 502 and service_id == "alert-realtime":
+            return WorkspaceError(
+                502,
+                "realtime_provider_unavailable",
+                service_id,
+                True,
+                "The real-time VLM provider is unavailable or rejected the stream.",
             )
         if status == 404:
             return WorkspaceError(
@@ -2098,6 +2115,49 @@ class WorkspaceAdapter:
             "source_status": source_status,
             "deleted_filter": deleted_filter,
         }
+
+    def realtime_alert_rules(
+        self,
+        method: str,
+        path: str,
+        request_id: str,
+        payload: dict[str, Any] | None = None,
+    ) -> tuple[int, Any]:
+        """Call the fixed VSS Alert Bridge realtime-rules API."""
+        if method not in {"GET", "POST", "DELETE"}:
+            raise WorkspaceError(
+                405,
+                "method_not_allowed",
+                "request",
+                False,
+                "Realtime alert method is not allowed.",
+            )
+        if not re.fullmatch(r"/api/v1/realtime(?:/[A-Za-z0-9_-]{1,100})?", path):
+            raise WorkspaceError(
+                404,
+                "not_found",
+                "request",
+                False,
+                "Realtime alert route was not found.",
+            )
+        status, value = self.client.json(
+            "alert-realtime",
+            method,
+            path,
+            payload=payload,
+            request_id=request_id,
+            operation="realtime_alert_rules",
+            timeout=12,
+        )
+        if not isinstance(value, dict):
+            raise WorkspaceError(
+                502,
+                "invalid_realtime_alert_response",
+                "alert-realtime",
+                True,
+                "The Alert Bridge returned an invalid JSON response.",
+            )
+        return status, value
 
     def _find_alert(
         self, source: str, identifier: str, request_id: str
