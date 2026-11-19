@@ -232,6 +232,21 @@ as proof that the host-local UI is down. Do not solve it by binding Phase 15 to
 future approved solution needs a safe host-side scrape/relay or an explicitly
 designed metrics endpoint.
 
+The proposed design is a Unix-socket metrics relay with no new host listener:
+[ADR-008](../decisions/ADR-008-phase15-metrics-relay.md). It is not approved
+or implemented yet; the target remains pending.
+
+## Real-time alert rules control plane
+
+`make phase15-start` now also starts `alert-realtime-redis`
+(`127.0.0.1:6380`) and `alert-realtime` (host loopback `9080`, pinned VSS
+Alert Verification 3.2.0 tag shipped with VSS 3.2.1). Both are CPU-only, and
+starting them never admits a GPU model. `make phase15-stop` stops them with
+`docker compose stop`, preserving images and volumes. Rule persistence is
+disabled in this overlay, so rules do not survive a restart. Creating a rule
+returns `realtime_provider_unavailable` while the admitted Cosmos3/RTVI
+provider is not running.
+
 ## Validation after recovery
 
 ### GPU profile windows and control-plane recovery

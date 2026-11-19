@@ -30,6 +30,7 @@ Compose hoặc tải NIM/model cache.
 - [ADR-005 — Single-GPU admission](decisions/ADR-005-single-gpu-admission-control.md)
 - [ADR-006 — Infrastructure data plane](decisions/ADR-006-infrastructure-data-plane.md)
 - [ADR-007 — Phase ordering exception](decisions/ADR-007-phase14-lock-phase15-ordering.md)
+- [ADR-008 — Phase 15 metrics relay (proposed, not approved)](decisions/ADR-008-phase15-metrics-relay.md)
 
 ADR là quyết định kiến trúc, không phải runtime status.
 

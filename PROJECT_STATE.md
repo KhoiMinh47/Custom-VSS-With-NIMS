@@ -13,6 +13,30 @@ thể mô tả runtime tại thời điểm khác.
 - Phase 14: `LOCKED_BY_USER`
 - Phase 16: `NOT_STARTED`
 
+## Source-only update 2026-11-19
+
+The source was updated after the runtime checkpoint above. No container, model
+or NIM was started. CPU-only checks pass: full unit suite `172 passed`, restore
+test, `py_compile` and the secret scan. `healthcheck-phase15.sh` has not been
+run against a live stack. Changes:
+
+- `start-phase15.sh` and `stop-phase15.sh` now manage `alert-realtime` and
+  `alert-realtime-redis`. Stop uses `docker compose stop` only.
+- `backup-phase15.sh` and `test-phase15-restore.sh` include
+  `scripts/alert-realtime-start.py`.
+- `healthcheck-phase15.sh` checks the realtime-rule list route and the
+  rejection of cross-origin rule mutations.
+- The gateway now audits rejected or failed realtime-rule create attempts.
+- The service registry (version 5) includes `realtime-alert-rules` on port 9080.
+- OpenAPI `1.6.0` documents the `/compat/alert-bridge/api/v1/realtime` routes,
+  and the version assertion in the unit test was updated to match.
+- ADR-008 proposes a Prometheus relay design; it is not approved or implemented.
+- `alert-realtime-redis` uses host networking bound to `127.0.0.1:6380`, with
+  no published Compose port.
+- The Upload Stream placeholder no longer shows an inline-credential example.
+
+The runtime health table below still reflects the 2026-08-04 checkpoint.
+
 ## Executive status
 
 Project đã có các đường chạy thật cho một physical `cam-01`: VIOS video
@@ -205,16 +229,20 @@ Runtime model evidence is documented in the phase handoffs/evaluation reports.
    approved reference data.
 5. Phase 15 browser accessibility/multi-viewport evidence remains incomplete.
 6. Prometheus still needs a safe scrape/relay for host-loopback Phase 15 API;
-   do not bind the API to `0.0.0.0` as a shortcut.
+   do not bind the API to `0.0.0.0` as a shortcut. A Unix-socket relay design
+   is proposed in `docs/decisions/ADR-008-phase15-metrics-relay.md` but is
+   not approved or implemented.
 7. The Real-time Alerts UI adapter is wired and its list endpoint is healthy,
    but creating a rule is blocked while the admitted Cosmos3/RTVI provider is
-   unavailable; no successful live alert inference is claimed.
-7. Current trusted-loopback admin mode is PoC-only and must not be exposed to
+   unavailable; no successful live alert inference is claimed. Realtime-rule
+   persistence is disabled (upstream Elasticsearch client vs ES 8.17), so
+   rule state is not durable.
+8. Current trusted-loopback admin mode is PoC-only and must not be exposed to
    LAN/Internet; production TLS/IdP remains incomplete.
-8. Host differs from NVIDIA prerequisites: AlmaLinux 8.10, Docker 26.1.3,
+9. Host differs from NVIDIA prerequisites: AlmaLinux 8.10, Docker 26.1.3,
    Compose 2.27.0, driver 590.48.01 and no NGC CLI 4.10+.
-9. Docker/disk headroom and external GPU processes must be monitored.
-10. No Phase 16 soak/final acceptance has been run.
+10. Docker/disk headroom and external GPU processes must be monitored.
+11. No Phase 16 soak/final acceptance has been run.
 
 ## Active architecture rules
 

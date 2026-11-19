@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "store_id": "store-001",
-  "registry_version": 4,
+  "registry_version": 5,
   "services": [
     {
       "id": "vss-ui",
@@ -94,6 +94,19 @@
       "health_url": "http://127.0.0.1:39210/health/ready",
       "public_url": "http://127.0.0.1:39510/",
       "launchable": true
+    },
+    {
+      "id": "realtime-alert-rules",
+      "name": "Real-time alert rules",
+      "description": "VSS Alert Verification realtime-rule control plane; rule start needs an admitted VLM.",
+      "phase": "PHASE-15",
+      "category": "alerts",
+      "port": 9080,
+      "exposure": "loopback-api",
+      "expected_state": "always_on",
+      "health_url": "http://127.0.0.1:9080/api/v1/realtime",
+      "public_url": null,
+      "launchable": false
     },
     {
       "id": "video-search",

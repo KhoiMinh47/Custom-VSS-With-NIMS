@@ -87,6 +87,22 @@ if grep -q "untrusted.invalid" <<<"$chat"; then
   exit 1
 fi
 
+# Real-time Alerts: control-plane read only. Listing rules never starts a VLM.
+realtime_rules="$(curl --fail --silent http://127.0.0.1:39510/compat/alert-bridge/api/v1/realtime)"
+"$PROJECT_ROOT/.venv/bin/python" - "$realtime_rules" <<'PY'
+import json
+import sys
+
+value = json.loads(sys.argv[1])
+assert isinstance(value, (list, dict))
+PY
+# A cross-origin rule mutation must be rejected before reaching the upstream.
+test "$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --header 'Content-Type: application/json' \
+  --header 'Origin: http://untrusted.invalid' \
+  --data '{}' \
+  http://127.0.0.1:39510/compat/alert-bridge/api/v1/realtime)" = "400"
+
 curl --fail --silent http://127.0.0.1:39510/openapi.json | grep -q "3.1.0"
 curl --fail --silent http://127.0.0.1:39510/metrics | grep -q "phase15_unified_api_ready 1"
 cameras="$(curl --fail --silent http://127.0.0.1:39510/api/v1/workspace/cameras)"

@@ -1246,6 +1246,13 @@ class Handler(BaseHTTPRequestHandler):
                 identity = self._authorized("tools:execute", request_id)
                 if identity is None:
                     return
+                # Audit rejected/failed attempts too; _read_json enforces
+                # same-origin, JSON content type and the payload size bound.
+                workspace_attempt = (
+                    identity,
+                    "workspace.realtime_alert_rule.create",
+                    realtime_alert_match.group(1) or "new",
+                )
                 payload = self._read_json(max_bytes=256 * 1024)
                 if not isinstance(payload, dict):
                     raise ValueError("realtime alert rule requires a JSON object")

@@ -53,6 +53,11 @@ scrape_configs:
     static_configs:
       - targets: ["summarization:8080"]
 
+  # PENDING GATE: phase15-api now runs on host networking bound to
+  # 127.0.0.1:39510, so this legacy bridge target is unreachable by design.
+  # Do not "fix" it by binding Phase 15 to 0.0.0.0. The proposed replacement
+  # (not approved, not implemented) is the Unix-socket metrics relay in
+  # docs/decisions/ADR-008-phase15-metrics-relay.md.
   - job_name: phase15-unified-api
     metrics_path: /metrics
     static_configs:

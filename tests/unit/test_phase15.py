@@ -541,6 +541,7 @@ def test_workspace_bff_uses_only_fixed_loopback_upstreams_and_rejects_ssrf() -> 
         "summarization": "http://127.0.0.1:39410",
         "media-intake": "http://127.0.0.1:39420",
         "vlm-test": "http://127.0.0.1:39520",
+        "alert-realtime": "http://127.0.0.1:9080",
         "nemotron": "http://127.0.0.1:30081",
     }
     assert workspace.UPSTREAMS == expected
@@ -1788,7 +1789,7 @@ def test_openapi_and_rbac_contracts_are_versioned() -> None:
         (ROOT / "config/security/phase15-rbac.json").read_text(encoding="utf-8")
     )
     assert openapi["openapi"] == "3.1.0"
-    assert openapi["info"]["version"] == "1.5.0"
+    assert openapi["info"]["version"] == "1.6.0"
     assert openapi["servers"] == [
         {
             "url": "http://127.0.0.1:39510",

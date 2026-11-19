@@ -1,6 +1,61 @@
 # PHASE-15 HANDOFF — unified VSS workspace refinement
 
-## 2026-08-05 Real-time Alerts URL repair (current)
+## 2026-11-19 Real-time Alerts wiring completion (source only, current)
+
+This entry finishes the source-level follow-ups to the Real-time Alerts gateway
+commit `1e27702`. By explicit user instruction, **nothing was executed**: no
+container, model or NIM was started, and no unit test, healthcheck, backup or
+restore test was run. Every item below is unvalidated source and is not runtime
+evidence.
+
+- Operations: `scripts/start-phase15.sh` starts `alert-realtime-redis` and
+  `alert-realtime` and waits for `127.0.0.1:9080/api/v1/realtime`.
+  `scripts/stop-phase15.sh` stops both with `docker compose stop` only.
+- Recovery: `scripts/backup-phase15.sh` archives
+  `scripts/alert-realtime-start.py`, and `scripts/test-phase15-restore.sh`
+  verifies it with `test -s` and `cmp`.
+- Health: `scripts/healthcheck-phase15.sh` reads the same-origin rule list. It
+  also asserts that a cross-origin `POST` is rejected with `400` before it
+  reaches the upstream.
+- Gateway audit: `POST /compat/alert-bridge/api/v1/realtime[/{id}]` now sets
+  `workspace_attempt`, so rejected or failed create attempts are audited the
+  same way as other workspace mutations. Same-origin, JSON and size checks were
+  already enforced by `_read_json`.
+- Registry: `config/application/service-registry.json` version 5 adds
+  `realtime-alert-rules` (`alerts`, port `9080`, `loopback-api`, `always_on`).
+  Listing rules never admits a VLM.
+- Contract: OpenAPI `1.6.0` documents the list, create, read and delete
+  realtime-rule routes. The version assertion in
+  `tests/unit/test_phase15.py` was updated to `1.6.0`; it has not been run. No
+  new unit tests were written, at the user's request.
+- Prometheus: [ADR-008](../decisions/ADR-008-phase15-metrics-relay.md) proposes
+  a Unix-socket metrics relay with no new host listener and no change to the
+  loopback bind. It is **proposed only**. `config/prometheus/prometheus.yml`
+  marks the legacy target as a pending gate.
+
+CPU-only validation was run later the same day, with no container, model or
+NIM started:
+
+- `docker compose config --quiet` (parse only): PASS;
+- `tests/unit/test_phase15.py` and `tests/unit/test_vlm_test.py`: `67 passed`;
+- full unit suite: `172 passed`;
+- `py_compile`, VSS `v3.2.1` pin, `test-phase15-restore.sh`, secret scan and
+  forbidden-surface scan: PASS.
+
+That run surfaced three breakages that were already on `main` and were fixed:
+
+- the fixed-upstream unit test did not list `alert-realtime`;
+- `alert-realtime-redis` published `127.0.0.1:6380:6379`, which violates the
+  no-`ports:` loopback policy. It now uses host networking bound to
+  `127.0.0.1:6380`, like `phase15-api`;
+- the Upload Stream URL placeholder contained a `user:password@` example that
+  tripped the secret scan. It is now `rtsp://camera-host:554/stream`.
+
+`healthcheck-phase15.sh` needs the running stack and was **not** run, so
+`make phase15-test` as a whole is not yet a PASS. The Redis change takes effect
+only after the alert services are next recreated. Phase 15 remains `PARTIAL`.
+
+## 2026-08-05 Real-time Alerts URL repair
 
 The NVIDIA Real-time Alerts screen was showing `Alerts API URL is not
 configured` because the browser environment did not define
@@ -869,8 +924,13 @@ The following gates remain deliberately open:
 - [ ] run screenshots, console inspection, keyboard-only navigation and
   viewport checks at 1920×1080, 1440×900, 1024×768, 768×1024 and 390×844 in an
   approved existing browser environment.
-- [ ] provide a safe scrape/relay design for the stale Prometheus
-  `phase15-api:8080` target without broadening the loopback bind.
+- [ ] approve and implement a safe scrape/relay for the stale Prometheus
+  `phase15-api:8080` target without broadening the loopback bind. The design
+  is proposed in `docs/decisions/ADR-008-phase15-metrics-relay.md` and is not
+  approved.
+- [ ] run `healthcheck-phase15.sh` against the running stack for the
+  2026-11-19 Real-time Alerts wiring. The CPU-only unit and restore checks
+  already pass.
 
 Do not fill these items from unit mocks or older launcher evidence.
 

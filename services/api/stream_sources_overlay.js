@@ -179,7 +179,7 @@
     const form = make("form");
     const urlLabel = make("label", "RTSP URL", "ntc-ss-label");
     urlInput = make("input", undefined, "ntc-ss-input");
-    urlInput.type = "url"; urlInput.required = true; urlInput.placeholder = "rtsp://user:password@camera:554/stream";
+    urlInput.type = "url"; urlInput.required = true; urlInput.placeholder = "rtsp://camera-host:554/stream";
     const nameLabel = make("label", "Tên nguồn", "ntc-ss-label");
     nameInput = make("input", undefined, "ntc-ss-input");
     nameInput.required = true; nameInput.maxLength = 80; nameInput.placeholder = "Warehouse Camera 01";

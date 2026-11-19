@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "NTC NVIDIA VSS Retail Unified Workspace",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "description": "Phase 15 NVIDIA VSS UI integration API. The browser uses only this loopback same-origin gateway. Fixed internal adapters expose camera presentation, analytics, alerts, selected media, semantic search, summarization, grounded Q&A and reports without exposing arbitrary upstream URLs. Phase 15 remains PARTIAL; Phase 14 remains LOCKED_BY_USER and Phase 08 remains deferred."
   },
   "servers": [
@@ -1012,6 +1012,145 @@
         "description": "Transforms the NVIDIA Search screen contract into the versioned workspace semantic-search contract.",
         "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
         "responses": {"200": {"$ref": "#/components/responses/JsonSuccess"}, "400": {"$ref": "#/components/responses/WorkspaceError"}, "503": {"$ref": "#/components/responses/WorkspaceError"}}
+      }
+    },
+    "/compat/alert-bridge/api/v1/realtime": {
+      "get": {
+        "tags": [
+          "VSS UI Compatibility"
+        ],
+        "operationId": "vssUiRealtimeAlertRuleList",
+        "description": "Lists real-time alert rules for the NVIDIA Real-time Alerts screen. Query parameters are rejected. Listing never starts or admits a VLM. Delegated only to the fixed loopback VSS Alert Verification service (pinned 3.2.0 tag shipped with VSS 3.2.1). Rule persistence is disabled in this overlay, so rule state is not durable.",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/JsonSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "VSS UI Compatibility"
+        ],
+        "operationId": "vssUiRealtimeAlertRuleCreate",
+        "description": "Creates a real-time alert rule. Requires tools:execute, a same-origin JSON body of at most 256 KiB, and is audited including rejected or failed attempts. Returns realtime_provider_unavailable (502) while the admitted Cosmos3/RTVI provider is not running. Delegated only to the fixed loopback VSS Alert Verification service (pinned 3.2.0 tag shipped with VSS 3.2.1). Rule persistence is disabled in this overlay, so rule state is not durable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/JsonSuccess"
+          },
+          "201": {
+            "$ref": "#/components/responses/JsonSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "502": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError"
+          }
+        }
+      }
+    },
+    "/compat/alert-bridge/api/v1/realtime/{rule_id}": {
+      "get": {
+        "tags": [
+          "VSS UI Compatibility"
+        ],
+        "operationId": "vssUiRealtimeAlertRuleRead",
+        "description": "Reads one real-time alert rule. Delegated only to the fixed loopback VSS Alert Verification service (pinned 3.2.0 tag shipped with VSS 3.2.1). Rule persistence is disabled in this overlay, so rule state is not durable.",
+        "parameters": [
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,100}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/JsonSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "VSS UI Compatibility"
+        ],
+        "operationId": "vssUiRealtimeAlertRuleDelete",
+        "description": "Deletes one real-time alert rule. Requires tools:execute, a same-origin request and an empty JSON object body; audited. Delegated only to the fixed loopback VSS Alert Verification service (pinned 3.2.0 tag shipped with VSS 3.2.1). Rule persistence is disabled in this overlay, so rule state is not durable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,100}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/JsonSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError"
+          }
+        }
       }
     },
     "/compat/mdx/incidents": {

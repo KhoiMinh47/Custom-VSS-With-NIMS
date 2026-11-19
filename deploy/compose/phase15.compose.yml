@@ -4,11 +4,12 @@ services:
   alert-realtime-redis:
     image: redis@sha256:c5e375abb885e6b2021c0377879e4890bf76f9065b8922ffc113f2b226b9fc17
     container_name: ntc-vss-phase15-alert-realtime-redis
-    command: ["redis-server", "--port", "6379"]
-    ports:
-      - "127.0.0.1:6380:6379"
+    # Host networking bound to loopback only, like phase15-api: no published
+    # Compose ports. alert-realtime reaches it at 127.0.0.1:6380.
+    command: ["redis-server", "--bind", "127.0.0.1", "--port", "6380"]
+    network_mode: host
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "-p", "6380", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10

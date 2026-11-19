@@ -25,6 +25,7 @@ test -s "$restore_root/services/summarization/service.py"
 test -s "$restore_root/deploy/compose/phase15.compose.yml"
 test -s "$restore_root/docs/handoffs/PHASE-15-HANDOFF.md"
 test -s "$restore_root/services/gpu-control-worker/worker.py"
+test -s "$restore_root/scripts/alert-realtime-start.py"
 test -d "$restore_root/runtime/phase15/audit"
 cmp "$PROJECT_ROOT/config/application/service-registry.json" \
   "$restore_root/config/application/service-registry.json"
@@ -52,4 +53,6 @@ cmp "$PROJECT_ROOT/deploy/compose/phase15.compose.yml" \
   "$restore_root/deploy/compose/phase15.compose.yml"
 cmp "$PROJECT_ROOT/services/gpu-control-worker/worker.py" \
   "$restore_root/services/gpu-control-worker/worker.py"
+cmp "$PROJECT_ROOT/scripts/alert-realtime-start.py" \
+  "$restore_root/scripts/alert-realtime-start.py"
 echo "Phase 15 backup extracted and verified in an isolated temporary directory."
