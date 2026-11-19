@@ -541,6 +541,7 @@ def test_workspace_bff_uses_only_fixed_loopback_upstreams_and_rejects_ssrf() -> 
         "summarization": "http://127.0.0.1:39410",
         "media-intake": "http://127.0.0.1:39420",
         "vlm-test": "http://127.0.0.1:39520",
+        "alert-realtime": "http://127.0.0.1:9080",
         "nemotron": "http://127.0.0.1:30081",
     }
     assert workspace.UPSTREAMS == expected

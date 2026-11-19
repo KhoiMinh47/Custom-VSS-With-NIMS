@@ -15,9 +15,10 @@ thể mô tả runtime tại thời điểm khác.
 
 ## Source-only update 2026-11-19
 
-The source was updated after the runtime checkpoint above. **Nothing was run.**
-No container, model or NIM was started, and no test, healthcheck or backup was
-executed. These changes are therefore unvalidated:
+The source was updated after the runtime checkpoint above. No container, model
+or NIM was started. CPU-only checks pass: full unit suite `172 passed`, restore
+test, `py_compile` and the secret scan. `healthcheck-phase15.sh` has not been
+run against a live stack. Changes:
 
 - `start-phase15.sh` and `stop-phase15.sh` now manage `alert-realtime` and
   `alert-realtime-redis`. Stop uses `docker compose stop` only.
@@ -30,6 +31,9 @@ executed. These changes are therefore unvalidated:
 - OpenAPI `1.6.0` documents the `/compat/alert-bridge/api/v1/realtime` routes,
   and the version assertion in the unit test was updated to match.
 - ADR-008 proposes a Prometheus relay design; it is not approved or implemented.
+- `alert-realtime-redis` uses host networking bound to `127.0.0.1:6380`, with
+  no published Compose port.
+- The Upload Stream placeholder no longer shows an inline-credential example.
 
 The runtime health table below still reflects the 2026-08-04 checkpoint.
 
