@@ -24,9 +24,13 @@ phase15_compose config --quiet
 # for this script's explicit readiness boundary.
 "$PROJECT_ROOT/scripts/ensure-control-plane.sh"
 phase15_compose up -d media-intake vlm-test vss-ui phase15-api
+# Real-time Alerts rule control plane (CPU only). Starting it never admits a
+# GPU model; creating a rule still needs the admitted Cosmos3/RTVI provider.
+phase15_compose up -d alert-realtime-redis alert-realtime
 phase15_wait_http "http://127.0.0.1:39511/" 90 "NVIDIA VSS UI"
 phase15_wait_http "http://127.0.0.1:39510/health/ready" 90 "Phase 15 unified app"
 phase15_wait_http "http://127.0.0.1:39520/health/ready" 90 "Phase 15 VLM-test control plane"
+phase15_wait_http "http://127.0.0.1:9080/api/v1/realtime" 120 "Phase 15 real-time alert rules"
 if [[ -S "$PROJECT_ROOT/runtime/secrets/camera-secret.sock" ]]; then
   # The browser live presentation is a project-local, credential-brokered
   # service. Start it only when the approved camera secret lease exists.
@@ -34,4 +38,4 @@ if [[ -S "$PROJECT_ROOT/runtime/secrets/camera-secret.sock" ]]; then
 else
   echo "camera_live=skipped reason=physical_camera_secret_unavailable"
 fi
-echo "NVIDIA VSS UI, Phase 15 gateway, VLM-test control plane and GPU worker are ready at http://127.0.0.1:39510/"
+echo "NVIDIA VSS UI, Phase 15 gateway, VLM-test control plane, real-time alert rules and GPU worker are ready at http://127.0.0.1:39510/"

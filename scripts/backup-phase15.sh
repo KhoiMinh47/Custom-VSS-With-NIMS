@@ -46,6 +46,7 @@ tar -C "$PROJECT_ROOT" -czf "$output" \
   scripts/start-phase10-vlm.sh \
   scripts/stop-phase12.sh \
   scripts/start-phase15.sh \
+  scripts/alert-realtime-start.py \
   scripts/stop-phase15.sh \
   scripts/test-phase15.sh \
   scripts/test-phase15-restore.sh \

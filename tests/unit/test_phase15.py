@@ -1788,7 +1788,7 @@ def test_openapi_and_rbac_contracts_are_versioned() -> None:
         (ROOT / "config/security/phase15-rbac.json").read_text(encoding="utf-8")
     )
     assert openapi["openapi"] == "3.1.0"
-    assert openapi["info"]["version"] == "1.5.0"
+    assert openapi["info"]["version"] == "1.6.0"
     assert openapi["servers"] == [
         {
             "url": "http://127.0.0.1:39510",
